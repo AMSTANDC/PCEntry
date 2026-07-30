@@ -1125,6 +1125,10 @@ button,select,input[type=checkbox],input[type=radio]{
           <label>Wufoo Form ID</label>
           <input type="text" id="s-wufoo-form-id" placeholder="e.g. z16hdq3m0aj8iyz">
         </div>
+        <div class="s-field">
+          <label>Policy Hub URL</label>
+          <input type="url" id="s-policy-hub-url" placeholder="https://script.google.com/macros/s/…">
+        </div>
 
         <div class="s-field">
           <label>Change Admin PIN</label>
@@ -2553,6 +2557,7 @@ const getPolicySiteName = () => loadSettings().policySiteName || SITE_CONFIG.pol
 const getAdminPin  = () => loadSettings().adminPin  || SITE_CONFIG.adminPin || '1234';
 const getScriptUrl = () => loadSettings().scriptUrl || SITE_CONFIG.scriptUrl || '';
 const getWufooFormId = () => loadSettings().wufooFormId || '';
+const getPolicyHubUrl = () => loadSettings().policyHubUrl || '';
 const getFilename  = () => { const c=getSiteCode(); return c?`ams_${c.toLowerCase()}.json`:'ams_entry.json'; };
 
 // ═══════════════════════════════════════════
@@ -2590,6 +2595,7 @@ function switchToSiteConfig(cfg, forceUpdateCategories) {
   s.maintenanceUrl = cfg.maintenanceReportsUrl || '';
   s.poiUrl         = cfg.poiUrl || '';
   s.wufooFormId    = cfg.wufooFormId || '';
+  s.policyHubUrl   = cfg.policyHubUrl || '';
   s.adminPin       = cfg.adminPin || SITE_CONFIG.adminPin || '5010';
   saveSettingsLS(s);
 
@@ -2852,9 +2858,17 @@ function applySettings() {
 
   const policyLink = document.getElementById('policyHubLink');
   if (policyLink) {
-    const baseUrl = 'https://script.google.com/macros/s/AKfycbwYGizAREzaw2uvhaPKHM4QzIe8YhqOIGxyT5lQ1UI8GoF8iV2dZjYKRQHVpwhFBhXU/exec';
-    const policySite = getPolicySiteName();
-    policyLink.href = policySite ? (baseUrl + '?site=' + encodeURIComponent(policySite)) : baseUrl;
+    const baseUrl = getPolicyHubUrl();
+    if (baseUrl) {
+      const policySite = getPolicySiteName();
+      policyLink.href = policySite ? (baseUrl + '?site=' + encodeURIComponent(policySite)) : baseUrl;
+      policyLink.style.opacity = '1';
+      policyLink.style.pointerEvents = 'auto';
+    } else {
+      policyLink.href = '#';
+      policyLink.style.opacity = '0.7';
+      policyLink.style.pointerEvents = 'none';
+    }
   }
 }
 
@@ -3213,6 +3227,7 @@ function checkPin() {
     document.getElementById('s-maintenance-url').value= s.maintenanceUrl || SITE_CONFIG.maintenanceReportsUrl;
     document.getElementById('s-poi-url').value         = s.poiUrl      || SITE_CONFIG.poiUrl;
     document.getElementById('s-wufoo-form-id').value    = s.wufooFormId || '';
+    document.getElementById('s-policy-hub-url').value   = s.policyHubUrl || '';
     buildCatEditor();
   } else {
     document.getElementById('pin-err').textContent = 'Incorrect PIN.';
@@ -3234,6 +3249,7 @@ function saveSettings() {
   s.maintenanceUrl = document.getElementById('s-maintenance-url').value.trim();
   s.poiUrl         = document.getElementById('s-poi-url').value.trim();
   s.wufooFormId    = document.getElementById('s-wufoo-form-id').value.trim();
+  s.policyHubUrl   = document.getElementById('s-policy-hub-url').value.trim();
   const np   = document.getElementById('s-new-pin').value.trim();
   if (np) {
     if (!/^\d{4,8}$/.test(np)) { showToast('PIN must be 4–8 digits','error'); return; }
