@@ -3486,7 +3486,75 @@ function generateDailyReport() {
 }
 
 function runExport() {
-  generateDailyReport();
+  if (typeof XLSX === 'undefined') { showToast('Spreadsheet library not loaded — check your internet connection', 'error'); return; }
+
+  const from = document.getElementById('exp-from').value;
+  const to   = document.getElementById('exp-to').value;
+  const incInc = document.getElementById('exp-inc').checked;
+  const incPPE = document.getElementById('exp-ppe').checked;
+  const incEQ  = document.getElementById('exp-eq').checked;
+
+  const wb = XLSX.utils.book_new();
+  const siteName = getSiteName() || 'AMS';
+
+  if (incInc) {
+    let data = loadData();
+    if (from && to) data = data.filter(r => r.date >= from && r.date <= to);
+    data.sort((a,b) => ((a.date||'')+(a.time||'')).localeCompare((b.date||'')+(b.time||'')));
+    const rows = data.map(r => ({
+      'Date':           r.date     || '',
+      'Time':           r.time     || '',
+      'Type':           r.type     || '',
+      'Officer':        r.officer  || '',
+      'Location':       r.location || '',
+      'Details':        r.details  || '',
+      'Action Taken':   r.action   || '',
+      'Status':         r.complete || '',
+      'Ref':            r.ref      || '',
+      'CMO':            r.cmo      || '',
+      'Month':          r.month    || '',
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [10,8,20,15,15,40,30,12,12,15,10].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Incidents');
+  }
+
+  if (incPPE) {
+    const ppeData = loadPPE ? loadPPE() : [];
+    if (ppeData.length) {
+      const rows = ppeData.map(r => ({
+        'Date':      r.date      || '',
+        'Officer':   r.officer   || '',
+        'Vest':      r.vest      || '',
+        'Condition': r.condition || '',
+        'Notes':     r.notes     || '',
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'PPE Inspections');
+    }
+  }
+
+  if (incEQ) {
+    const eqData = loadEQ ? loadEQ() : [];
+    if (eqData.length) {
+      const rows = eqData.map(r => ({
+        'Item':      r.item      || '',
+        'Status':    r.status    || '',
+        'Officer':   r.officer   || '',
+        'Date':      r.date      || '',
+        'Notes':     r.notes     || '',
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Equipment Register');
+    }
+  }
+
+  if (wb.SheetNames.length === 0) {
+    showToast('Nothing selected to export', 'error');
+    return;
+  }
+
+  const dateStr = (from && to) ? (from === to ? from : from + '_to_' + to) : new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, siteName.replace(/\s+/g,'_') + '_Incidents_' + dateStr + '.xlsx');
+  closeExportModal();
 }
 
 function exportBackup() {
