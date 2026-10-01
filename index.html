@@ -76,6 +76,7 @@ header{
 .sync-dot.saving{background:var(--warning);animation:pulse 0.8s infinite;}
 .sync-dot.error{background:var(--danger);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes commsPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.05)}}
 .sync-lbl{color:var(--text3);flex:1;font-size:11px;}
 .sync-lbl strong{color:var(--text2);}
 .sync-actions{display:flex;gap:6px;flex-shrink:0;}
@@ -788,6 +789,17 @@ button,select,input[type=checkbox],input[type=radio]{
       <div class="landing-tile" onclick="openForm()" style="grid-column:1 / -1;padding:22px 14px;background:rgba(234,179,8,0.42);border-color:rgba(234,179,8,0.9);">
         <div class="landing-tile-icon" style="font-size:32px;margin-bottom:4px;color:#ef4444;">⚠︎</div>
         <div class="landing-tile-label" style="color:#fef9c3;font-size:16px;">Add Incident / Log Entry</div>
+      </div>
+
+      <!-- Comms Log — full width tile above registers -->
+      <div class="landing-tile" onclick="openCommsModal()" style="grid-column:1/-1;padding:14px;background:rgba(99,102,241,0.15);border-color:rgba(99,102,241,0.4);position:relative;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px;">📨</span>
+            <span style="font-size:14px;font-weight:700;color:#a5b4fc;font-family:var(--condensed);letter-spacing:0.3px;text-transform:uppercase;">Comms Log — Pass-On Book</span>
+          </div>
+          <div id="comms-badge-wrap" style="display:none;display:flex;align-items:center;gap:6px;flex-wrap:wrap;"></div>
+        </div>
       </div>
 
       <div class="landing-section-label">Registers</div>
@@ -1829,6 +1841,104 @@ button,select,input[type=checkbox],input[type=radio]{
 </div>
 
 <!-- ══ ISOLATION REGISTER MODAL ══ -->
+<!-- ── COMMS LOG MODAL ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="comms-modal" onclick="if(event.target.id==='comms-modal')closeCommsModal()">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-hdr" style="background:linear-gradient(135deg,#1e1b4b,#312e81);">
+      <div class="modal-hdr-icon" style="background:#6366f1;font-size:16px;">📨</div>
+      <div><h3>COMMS LOG — PASS-ON BOOK</h3><p>Messages between shifts. Acknowledge all messages you have read.</p></div>
+      <button class="modal-close" onclick="closeCommsModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+      <div class="form-divider" style="margin-bottom:12px;"><span>New Message</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div class="form-group">
+          <label class="lbl">Your Name <span class="req">*</span></label>
+          <input type="text" id="comms-author" placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+          <label class="lbl">Priority</label>
+          <select id="comms-priority">
+            <option value="Routine">🟢 Routine</option>
+            <option value="Urgent">🟡 Urgent</option>
+            <option value="Action Required">🔴 Action Required</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="lbl">Message <span class="req">*</span></label>
+        <textarea id="comms-message" placeholder="Enter your message for the next shift…" style="min-height:80px;width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:10px 14px;">
+          <input type="checkbox" id="comms-for-manager" style="width:18px;height:18px;accent-color:#6366f1;cursor:pointer;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#a5b4fc;">📋 For Manager Attention</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:1px;">Flags this message so the manager can see it in their view</div>
+          </div>
+        </label>
+      </div>
+      <button onclick="saveCommsMessage()" class="btn-smod-primary" style="margin-bottom:20px;">📤 Post Message</button>
+      <div class="form-divider" style="margin-bottom:12px;"><span>Messages</span></div>
+      <div id="comms-list" style="max-height:400px;overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Comms Acknowledge modal -->
+<div class="modal-overlay" id="comms-ack-modal" onclick="if(event.target.id==='comms-ack-modal')closeCommsAck()" style="z-index:700;">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-hdr" style="background:linear-gradient(135deg,#052e16,#14532d);">
+      <div class="modal-hdr-icon" style="background:#22c55e;font-size:16px;">✅</div>
+      <div><h3>ACKNOWLEDGE MESSAGE</h3><p>Enter your initials and any response or outcome</p></div>
+      <button class="modal-close" onclick="closeCommsAck()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="lbl">Your Initials <span class="req">*</span></label>
+        <input type="text" id="comms-ack-initials" placeholder="e.g. JB" maxlength="5" style="text-transform:uppercase;font-size:18px;font-weight:700;text-align:center;">
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="lbl">Response / Outcome <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+        <textarea id="comms-ack-response" placeholder="e.g. Noted and actioned. Contractor met at gate at 09:15." style="min-height:80px;width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeCommsAck()" class="btn-smod-outline" style="flex:1;">Cancel</button>
+        <button onclick="confirmCommsAck()" class="btn-smod-primary" style="flex:2;background:#16a34a;border-color:#16a34a;">✅ Acknowledge</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Comms Edit modal -->
+<div class="modal-overlay" id="comms-edit-modal" onclick="if(event.target.id==='comms-edit-modal')closeCommsEdit()" style="z-index:700;">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-hdr" style="background:linear-gradient(135deg,#1c1917,#292524);">
+      <div class="modal-hdr-icon" style="background:var(--gold);font-size:16px;">✏️</div>
+      <div><h3>EDIT MESSAGE</h3><p>Update the message text or priority</p></div>
+      <button class="modal-close" onclick="closeCommsEdit()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="lbl">Priority</label>
+        <select id="comms-edit-priority">
+          <option value="Routine">🟢 Routine</option>
+          <option value="Urgent">🟡 Urgent</option>
+          <option value="Action Required">🔴 Action Required</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="lbl">Message</label>
+        <textarea id="comms-edit-message" style="min-height:100px;width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;outline:none;resize:vertical;line-height:1.5;"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closeCommsEdit()" class="btn-smod-outline" style="flex:1;">Cancel</button>
+        <button onclick="confirmCommsEdit()" class="btn-smod-primary" style="flex:2;">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="isolation-modal" onclick="if(event.target.id==='isolation-modal')closeIsolationModal()">
   <div class="modal" style="max-width:900px;">
     <div class="modal-hdr" style="background:linear-gradient(135deg,#2d1505,#4a2408);">
@@ -2757,7 +2867,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderPermitAlert();
   renderKeysAlert();
   renderLostPropertyAlert();
-  updateClock();
+  updateCommsBadge();  updateClock();
   setInterval(updateClock, 1000);
   if (getScriptUrl()) {
     fsSetStatus('linked', '&#9729; Google Drive sync enabled — loading...');
@@ -3558,6 +3668,204 @@ function runExport() {
   const dateStr = (from && to) ? (from === to ? from : from + '_to_' + to) : new Date().toISOString().slice(0,10);
   XLSX.writeFile(wb, siteName.replace(/\s+/g,'_') + '_Incidents_' + dateStr + '.xlsx');
   closeExportModal();
+}
+
+// ══ COMMS LOG ════════════════════════════════════════════════════════════════
+let _commsAckId  = null;
+let _commsEditId = null;
+
+function commsStorageKey() {
+  const code = getSiteCode();
+  return code ? 'ams_comms_' + code : 'ams_comms_default';
+}
+function loadComms() {
+  try { return JSON.parse(localStorage.getItem(commsStorageKey()) || '[]'); } catch { return []; }
+}
+function saveCommsData(msgs) {
+  try { localStorage.setItem(commsStorageKey(), JSON.stringify(msgs)); }
+  catch(e) { showToast('Storage full — comms not saved', 'error'); }
+}
+
+function openCommsModal() {
+  renderComms();
+  document.getElementById('comms-modal').style.display = 'flex';
+}
+function closeCommsModal() {
+  document.getElementById('comms-modal').style.display = 'none';
+}
+
+function saveCommsMessage() {
+  const author     = (document.getElementById('comms-author').value || '').trim();
+  const message    = (document.getElementById('comms-message').value || '').trim();
+  const priority   = document.getElementById('comms-priority').value;
+  const forManager = document.getElementById('comms-for-manager').checked;
+  if (!author)  { showToast('Enter your name', 'error'); return; }
+  if (!message) { showToast('Enter a message', 'error'); return; }
+  const msgs = loadComms();
+  const now  = new Date();
+  msgs.unshift({
+    id:               'comms_' + Date.now(),
+    date:             now.toLocaleDateString('en-AU'),
+    time:             now.toTimeString().slice(0,5),
+    author,
+    priority,
+    message,
+    forManager,
+    acknowledgements: [],
+    createdAt:        now.toISOString(),
+    updatedAt:        now.toISOString(),
+  });
+  saveCommsData(msgs);
+  document.getElementById('comms-message').value = '';
+  document.getElementById('comms-author').value  = '';
+  document.getElementById('comms-for-manager').checked = false;
+  renderComms();
+  updateCommsBadge();
+  if (typeof syncToScript === 'function') syncToScript();
+  showToast('Message posted ✓', 'success');
+}
+
+function renderComms() {
+  const list = document.getElementById('comms-list');
+  if (!list) return;
+  const msgs = loadComms();
+  if (!msgs.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px 0;font-size:14px;">No messages yet</div>';
+    return;
+  }
+  const PRIORITY_COL = { 'Routine':'#86efac','Urgent':'#fcd34d','Action Required':'#fca5a5' };
+  const PRIORITY_BG  = { 'Routine':'rgba(34,197,94,0.15)','Urgent':'rgba(245,158,11,0.15)','Action Required':'rgba(239,68,68,0.15)' };
+  const PRIORITY_ICN = { 'Routine':'🟢','Urgent':'🟡','Action Required':'🔴' };
+  list.innerHTML = msgs.map(m => {
+    const acks     = m.acknowledgements || [];
+    const isUnread = acks.length === 0;
+    const col      = PRIORITY_COL[m.priority] || '#86efac';
+    const icn      = PRIORITY_ICN[m.priority] || '🟢';
+    const bg       = isUnread ? (PRIORITY_BG[m.priority] || 'rgba(239,68,68,0.15)') : 'var(--bg3)';
+    const unreadBadge = isUnread
+      ? `<span style="display:inline-block;background:${PRIORITY_BG[m.priority]||'rgba(239,68,68,0.15)'};color:${col};border:1px solid ${col};font-size:12px;font-weight:800;padding:3px 10px;border-radius:10px;animation:commsPulse 0.8s infinite;letter-spacing:0.5px;">${icn} ${m.priority} — UNREAD</span>`
+      : `<span style="font-size:12px;color:var(--text3);">${icn} ${m.priority}</span>`;
+    const mgrTag = m.fromManager
+      ? `<span style="background:rgba(99,102,241,0.2);color:#a5b4fc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;">📋 From Management</span>`
+      : m.forManager
+        ? `<span style="background:rgba(99,102,241,0.15);color:#a5b4fc;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid rgba(99,102,241,0.3);">📋 For Manager Attention</span>`
+        : '';
+    const ackHtml = acks.length
+      ? `<div style="font-size:12px;color:var(--text3);margin-top:8px;">✅ Acknowledged by: ${acks.map(a=>`<strong style="color:${col}">${a.initials}</strong>${a.response ? ` <span style="color:var(--text2);font-style:italic;">"${a.response}"</span>` : ''} <span style="color:var(--text3)">(${a.time})</span>`).join(' · ')}</div>`
+      : `<div style="font-size:12px;color:#fca5a5;margin-top:8px;font-weight:700;">⚠ Not yet acknowledged by any guard</div>`;
+    const editedHtml = m.editedAt
+      ? `<div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:4px;">Edited ${new Date(m.editedAt).toLocaleString('en-AU')}</div>`
+      : '';
+    return `<div style="background:${bg};border:1px solid ${isUnread ? col : 'var(--border2)'};border-left:3px solid ${col};border-radius:8px;padding:14px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${unreadBadge}${mgrTag}</div>
+        <div style="font-size:11px;color:var(--text3);">${m.date||''} · ${m.time||''} — ${m.author}</div>
+      </div>
+      <div style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:6px;white-space:pre-wrap;">${m.message}</div>
+      ${editedHtml}${ackHtml}
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="openCommsAck('${m.id}')" class="btn-smod-primary" style="flex:2;padding:8px;font-size:13px;background:#16a34a;border-color:#16a34a;">✅ Acknowledge</button>
+        <button onclick="openCommsEdit('${m.id}')" class="btn-smod-outline" style="flex:1;padding:8px;font-size:13px;">✏️ Edit</button>
+        <button onclick="deleteCommsMessage('${m.id}')" class="btn-smod-outline" style="flex:1;padding:8px;font-size:13px;color:#fca5a5;border-color:rgba(239,68,68,0.3);">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateCommsBadge() {
+  const msgs   = loadComms();
+  const unread = msgs.filter(m => (m.acknowledgements||[]).length === 0);
+  const wrap   = document.getElementById('comms-badge-wrap');
+  if (!wrap) return;
+  if (!unread.length) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  const PRIORITY_COL = { 'Action Required':'#fca5a5','Urgent':'#fcd34d','Routine':'#86efac' };
+  const PRIORITY_BG  = { 'Action Required':'rgba(239,68,68,0.15)','Urgent':'rgba(245,158,11,0.15)','Routine':'rgba(34,197,94,0.15)' };
+  const PRIORITY_ICN = { 'Action Required':'🔴','Urgent':'🟡','Routine':'🟢' };
+  const counts = { 'Action Required':0,'Urgent':0,'Routine':0 };
+  unread.forEach(m => { if (counts[m.priority] !== undefined) counts[m.priority]++; });
+  let html = '<span style="font-size:15px;font-weight:900;color:#fff;text-shadow:0 0 8px #ef4444,0 0 16px #ef4444;animation:commsPulse 0.8s infinite;margin-right:6px;letter-spacing:1px;">⚠ NEW</span>';
+  ['Action Required','Urgent','Routine'].forEach(p => {
+    if (!counts[p]) return;
+    const col = PRIORITY_COL[p]; const bg = PRIORITY_BG[p]; const icn = PRIORITY_ICN[p];
+    html += `<span style="background:${bg};color:${col};border:1px solid ${col};font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;animation:commsPulse 0.8s infinite;white-space:nowrap;">${icn} ${counts[p]} ${p}</span>`;
+  });
+  wrap.innerHTML = html;
+  wrap.style.display = 'flex';
+}
+
+function openCommsAck(id) {
+  _commsAckId = id;
+  document.getElementById('comms-ack-initials').value = '';
+  document.getElementById('comms-ack-response').value = '';
+  document.getElementById('comms-ack-modal').style.display = 'flex';
+}
+function closeCommsAck() {
+  document.getElementById('comms-ack-modal').style.display = 'none';
+  _commsAckId = null;
+}
+function confirmCommsAck() {
+  const initials  = (document.getElementById('comms-ack-initials').value || '').trim().toUpperCase();
+  const response  = (document.getElementById('comms-ack-response').value || '').trim();
+  if (!initials) { showToast('Enter your initials', 'error'); return; }
+  const msgs = loadComms();
+  const msg  = msgs.find(m => m.id === _commsAckId);
+  if (!msg) { closeCommsAck(); return; }
+  if ((msg.acknowledgements||[]).some(a => a.initials === initials)) {
+    showToast('Already acknowledged by ' + initials, 'error'); closeCommsAck(); return;
+  }
+  if (!msg.acknowledgements) msg.acknowledgements = [];
+  msg.acknowledgements.push({
+    initials,
+    response: response || null,
+    time: new Date().toLocaleString('en-AU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}),
+  });
+  msg.updatedAt = new Date().toISOString();
+  saveCommsData(msgs);
+  if (typeof syncToScript === 'function') syncToScript();
+  closeCommsAck();
+  renderComms();
+  updateCommsBadge();
+  showToast('Acknowledged by ' + initials + ' ✓', 'success');
+}
+
+function openCommsEdit(id) {
+  _commsEditId = id;
+  const msgs = loadComms();
+  const msg  = msgs.find(m => m.id === id);
+  if (!msg) return;
+  document.getElementById('comms-edit-message').value  = msg.message;
+  document.getElementById('comms-edit-priority').value = msg.priority;
+  document.getElementById('comms-edit-modal').style.display = 'flex';
+}
+function closeCommsEdit() {
+  document.getElementById('comms-edit-modal').style.display = 'none';
+  _commsEditId = null;
+}
+function confirmCommsEdit() {
+  const message  = (document.getElementById('comms-edit-message').value || '').trim();
+  const priority = document.getElementById('comms-edit-priority').value;
+  if (!message) { showToast('Message cannot be empty', 'error'); return; }
+  const msgs = loadComms();
+  const idx  = msgs.findIndex(m => m.id === _commsEditId);
+  if (idx < 0) { closeCommsEdit(); return; }
+  msgs[idx].message   = message;
+  msgs[idx].priority  = priority;
+  msgs[idx].editedAt  = new Date().toISOString();
+  msgs[idx].updatedAt = new Date().toISOString();
+  saveCommsData(msgs);
+  if (typeof syncToScript === 'function') syncToScript();
+  closeCommsEdit();
+  renderComms();
+  showToast('Message updated ✓', 'success');
+}
+
+function deleteCommsMessage(id) {
+  if (!confirm('Delete this message? This cannot be undone.')) return;
+  saveCommsData(loadComms().filter(m => m.id !== id));
+  if (typeof syncToScript === 'function') syncToScript();
+  renderComms();
+  updateCommsBadge();
+  showToast('Message deleted', 'success');
 }
 
 function exportBackup() {
@@ -5760,6 +6068,7 @@ async function syncToScript() {
     keys:                loadKeys(),
     lostProperty:        loadLostProperty(),
     workplaceInjuries:   loadInjuries(),
+    commsLog:            loadComms(),
     deletedIds:          JSON.parse(localStorage.getItem('ams_deleted_ids_'+siteCode)||'[]'),
   };
 
@@ -5896,8 +6205,14 @@ async function pullFromScript() {
       safeSetItem(('ams_lostprop_data_'+getSiteCode()), merge(d.lostProperty, loadLostProperty())),
       safeSetItem(('ams_injury_data_'+getSiteCode()), merge(d.workplaceInjuries, loadInjuries())),
     ];
+    // Merge commsLog from cloud into local storage
+    if (d.commsLog && d.commsLog.length) {
+      const mergedComms = merge(d.commsLog, loadComms());
+      try { localStorage.setItem(commsStorageKey(), JSON.stringify(mergedComms)); } catch(e) {}
+    }
     renderLog(); renderEqLog();
     renderIsolationAlert(); renderPermitAlert(); renderKeysAlert(); renderLostPropertyAlert();
+    updateCommsBadge();
     const anyTrimmed = results.some(r => r.trimmed && r.ok);
     if (anyTrimmed) {
       fsSetStatus('linked', '☁ Synced (local cache trimmed to fit) — ' + new Date().toLocaleTimeString());
