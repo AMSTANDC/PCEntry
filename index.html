@@ -707,6 +707,7 @@ button,select,input[type=checkbox],input[type=radio]{
   0%,100%{ box-shadow:0 0 6px 1px rgba(236,72,153,0.55); }
   50%{ box-shadow:0 0 18px 5px rgba(236,72,153,0.95); }
 }
+@media(max-width:480px){ .safety-checks-grid{grid-template-columns:1fr !important;} }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -1384,7 +1385,7 @@ button,select,input[type=checkbox],input[type=radio]{
 
       <div style="background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.3);border-radius:8px;padding:14px;margin-bottom:14px;">
         <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Safety Checks</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="safety-checks-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
           <div class="form-group">
             <label class="lbl">Vest Being Worn?</label>
             <div style="display:flex;gap:8px;margin-top:4px;">
@@ -1404,6 +1405,18 @@ button,select,input[type=checkbox],input[type=radio]{
               <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-keys" value="N/A" id="eq-keys-na"> N/A</label>
             </div>
             <div style="font-size:10px;color:var(--text3);margin-top:4px;">Are you satisfied keys are secure on your person?</div>
+          </div>
+          <div class="form-group">
+            <label class="lbl">Working Earpiece?</label>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="Yes" id="eq-earpiece-yes" style="accent-color:var(--accent);" onclick="document.getElementById('eq-earpiece-reason-row').style.display='none';document.getElementById('eq-earpiece-reason').value=''"> Yes</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="No" id="eq-earpiece-no" onclick="document.getElementById('eq-earpiece-reason-row').style.display='block'"> No</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="N/A" id="eq-earpiece-na" onclick="document.getElementById('eq-earpiece-reason-row').style.display='none';document.getElementById('eq-earpiece-reason').value=''"> N/A</label>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:4px;">Do you have a working radio earpiece?</div>
+            <div id="eq-earpiece-reason-row" style="display:none;margin-top:8px;">
+              <input type="text" id="eq-earpiece-reason" placeholder="Why no working earpiece?…" style="width:100%;background:var(--bg3);border:1px solid var(--danger);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:12px;outline:none;">
+            </div>
           </div>
         </div>
       </div>
@@ -3117,6 +3130,9 @@ function openEquipModal(mode) {
   document.querySelectorAll('input[name="eq-keys"]').forEach(r=>r.checked=false);
   document.getElementById('eq-vest-reason').value='';
   document.getElementById('eq-vest-reason-row').style.display='none';
+  document.querySelectorAll('input[name="eq-earpiece"]').forEach(r=>r.checked=false);
+  document.getElementById('eq-earpiece-reason').value='';
+  document.getElementById('eq-earpiece-reason-row').style.display='none';
   document.getElementById('eq-m-remarks-out').value = '';
   document.getElementById('eq-m-condition-out').value = 'Good';
   document.getElementById('eq-modal').classList.add('open');
@@ -5028,6 +5044,13 @@ function eqSignOut() {
   if (!date)     { showToast('Please enter a date', 'error'); return; }
   if (!timeOut)  { showToast('Please enter time out', 'error'); return; }
   if (!equipment.length && !other) { showToast('Please select at least one item', 'error'); return; }
+  const earpieceVal = document.querySelector('input[name="eq-earpiece"]:checked')?.value || '';
+  if (!earpieceVal) { showToast('Please answer the working earpiece check', 'error'); return; }
+  if (earpieceVal === 'No' && !document.getElementById('eq-earpiece-reason').value.trim()) {
+    showToast('Please explain why you do not have a working earpiece', 'error');
+    document.getElementById('eq-earpiece-reason').focus();
+    return;
+  }
 
   const dt    = new Date(date);
   const month = EQ_MONTHS[dt.getMonth()] + ' ' + dt.getFullYear();
@@ -5040,6 +5063,8 @@ function eqSignOut() {
     vestWorn:   document.querySelector('input[name="eq-vest"]:checked')?.value || '',
     vestReason: document.getElementById('eq-vest-reason')?.value.trim() || '',
     keysSecure: document.querySelector('input[name="eq-keys"]:checked')?.value || '',
+    earpieceWorking: document.querySelector('input[name="eq-earpiece"]:checked')?.value || '',
+    earpieceReason:  document.getElementById('eq-earpiece-reason')?.value.trim() || '',
     timeOut,
     conditionOut: document.getElementById('eq-m-condition-out').value,
     remarksOut:   document.getElementById('eq-m-remarks-out').value.trim(),
@@ -5076,7 +5101,9 @@ function eqSignOut() {
       time:      timeOut,
       officer:   operator,
       location:  getSiteName(),
-      details:   'Signed on. Equipment signed out: ' + [...equipment, ...(other?[other]:[])].join(', '),
+      details:   'Signed on. Equipment signed out: ' + [...equipment, ...(other?[other]:[])].join(', ')
+                 + '. Working earpiece: ' + earpieceVal
+                 + (earpieceVal === 'No' ? ' (' + document.getElementById('eq-earpiece-reason').value.trim() + ')' : '') + '.',
       ref: '', complete: '', cmo: '', cmoName: '', action: '',
       site:      getSiteName(),
       siteCode:  getSiteCode(),
