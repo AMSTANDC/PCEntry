@@ -111,8 +111,13 @@ header{
 .landing-subrow{grid-column:1/-1;display:grid;gap:10px;}
 .landing-subrow-3{grid-template-columns:repeat(3,1fr);}
 .landing-subrow-4{grid-template-columns:repeat(4,1fr);}
+.landing-subrow-5{grid-template-columns:repeat(5,1fr);}
+@media(max-width:768px){
+  .landing-subrow-5{grid-template-columns:repeat(3,1fr);}
+}
 @media(max-width:480px){
-  .landing-subrow-3,.landing-subrow-4{grid-template-columns:repeat(2,1fr);}
+  .landing-subrow-3,.landing-subrow-4,.landing-subrow-5{grid-template-columns:repeat(2,1fr);}
+  .landing-subrow-5 > :last-child:nth-child(odd){grid-column:1/-1;}
 }
 .landing-section-label{
   grid-column:1/-1;font-size:10.5px;font-weight:700;letter-spacing:0.08em;
@@ -323,6 +328,7 @@ label.lbl .req{color:var(--danger);margin-left:2px;}
 
 /* ── TOAST ── */
 #toast{
+  pointer-events:none;
   position:fixed;bottom:22px;right:22px;
   border-radius:8px;padding:11px 17px;font-size:13px;color:#fff;
   box-shadow:0 8px 24px rgba(0,0,0,0.5);
@@ -703,11 +709,42 @@ button,select,input[type=checkbox],input[type=radio]{
 #permit-alert-banner{ animation:alertGlowIndigo 1.6s ease-in-out infinite; }
 #keys-alert-banner{ animation:alertGlowSky 1.6s ease-in-out infinite; }
 #lostprop-alert-banner{ animation:alertGlowPink 1.6s ease-in-out infinite; }
+#bwc-alert-banner{ animation:alertGlowRed 1.6s ease-in-out infinite; }
+@keyframes alertGlowRed{
+  0%,100%{ box-shadow:0 0 6px 1px rgba(239,68,68,0.55); }
+  50%{ box-shadow:0 0 18px 5px rgba(239,68,68,0.95); }
+}
+#bwc-modal .form-grid input,
+#bwc-modal .form-grid select,
+#bwc-modal .form-grid textarea{
+  padding:13px 14px; min-height:46px;
+  background:#ffffff; color:#1a2332; border:1px solid #dde3eb;
+  color-scheme:light;
+}
+#bwc-modal .form-grid input::placeholder,
+#bwc-modal .form-grid textarea::placeholder{ color:#8a9bb0; }
+#bwc-modal .form-grid select option{ background:#ffffff; color:#1a2332; }
+#bwc-modal .form-grid input:focus,
+#bwc-modal .form-grid select:focus,
+#bwc-modal .form-grid textarea:focus{
+  border-color:#ef4444; box-shadow:0 0 0 3px rgba(239,68,68,0.18);
+}
+.bwc-yn{display:flex;gap:8px;}
+.bwc-yn button{flex:1;padding:11px 10px;border-radius:8px;border:1.5px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;}
+.bwc-yn button.sel-yes{background:rgba(34,197,94,0.18);border-color:#22c55e;color:#86efac;}
+.bwc-yn button.sel-no{background:rgba(239,68,68,0.18);border-color:#ef4444;color:#fca5a5;}
+.bwc-field-err{border-color:#ef4444 !important;box-shadow:0 0 0 3px rgba(239,68,68,0.35) !important;}
+.bwc-yn.bwc-field-err{border:2px solid #ef4444;border-radius:10px;padding:3px;}
+.ds-table{width:100%;border-collapse:collapse;font-size:12px;}
+.ds-table td{padding:7px 6px;border-top:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.ds-btn{padding:4px 10px!important;font-size:11px!important;white-space:nowrap;}
+.ds-note{font-size:10px;color:var(--text3);white-space:nowrap;}
+.bwc-hint{font-size:11px;color:var(--text3);line-height:1.5;margin-top:4px;}
+.bwc-quote{font-size:12px;font-style:italic;color:#fca5a5;background:rgba(239,68,68,0.08);border-left:3px solid #ef4444;border-radius:4px;padding:8px 10px;margin-top:6px;line-height:1.5;}
 @keyframes alertGlowPink{
   0%,100%{ box-shadow:0 0 6px 1px rgba(236,72,153,0.55); }
   50%{ box-shadow:0 0 18px 5px rgba(236,72,153,0.95); }
 }
-@media(max-width:480px){ .safety-checks-grid{grid-template-columns:1fr !important;} }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -771,6 +808,13 @@ button,select,input[type=checkbox],input[type=radio]{
   <span style="font-size:11px;color:#c7d2fe;text-decoration:underline;">Tap to review</span>
 </div>
 
+<div id="bwc-alert-banner" onclick="openBwcModal()" style="display:none;cursor:pointer;background:linear-gradient(135deg,#450a0a,#991b1b);border:1px solid #ef4444;border-radius:8px;padding:10px 16px;margin-bottom:12px;align-items:center;gap:10px;">
+  <span class="alert-dot" style="background:#ef4444;"></span>
+  <span style="font-size:18px;">🎥</span>
+  <span id="bwc-alert-text" style="font-size:13px;font-weight:700;color:#fee2e2;flex:1;"></span>
+  <span style="font-size:11px;color:#fecaca;text-decoration:underline;">Tap to review</span>
+</div>
+
 <div id="keys-alert-banner" onclick="openKeysModal()" style="display:none;cursor:pointer;background:linear-gradient(135deg,#0c4a6e,#0369a1);border:1px solid #0ea5e9;border-radius:8px;padding:10px 16px;margin-bottom:12px;align-items:center;gap:10px;">
   <span class="alert-dot" style="background:#7dd3fc;"></span>
   <span style="font-size:18px;">🔑</span>
@@ -805,8 +849,8 @@ button,select,input[type=checkbox],input[type=radio]{
 
       <div class="landing-section-label">Registers</div>
 
-      <!-- Isolation / Keys / Permit / Lost Property registers — one row of 4 -->
-      <div class="landing-subrow landing-subrow-4">
+      <!-- Isolation / Keys / Permit / Lost Property / BWC registers — one row of 5 -->
+      <div class="landing-subrow landing-subrow-5">
         <div class="landing-tile" onclick="openIsolationModal()" style="padding:11px 9px;background:rgba(132,204,22,0.2);border-color:rgba(132,204,22,0.5);">
           <div class="landing-tile-icon" style="font-size:22px;margin-bottom:4px;">🔒</div>
           <div class="landing-tile-label" style="color:#bef264;">Isolation Register</div>
@@ -822,6 +866,10 @@ button,select,input[type=checkbox],input[type=radio]{
         <div class="landing-tile" onclick="openLostPropertyModal()" style="padding:11px 9px;background:rgba(236,72,153,0.2);border-color:rgba(236,72,153,0.5);">
           <div class="landing-tile-icon" style="font-size:22px;margin-bottom:4px;">🎒</div>
           <div class="landing-tile-label" style="color:#f9a8d4;">Lost Property</div>
+        </div>
+        <div class="landing-tile" onclick="openBwcModal()" style="padding:11px 9px;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);">
+          <div class="landing-tile-icon" style="font-size:22px;margin-bottom:4px;">🎥</div>
+          <div class="landing-tile-label" style="color:#fca5a5;">Body Worn Camera Log</div>
         </div>
       </div>
 
@@ -967,6 +1015,16 @@ button,select,input[type=checkbox],input[type=radio]{
           <select id="f-secondary">
             <option value="">— None / Same —</option>
           </select>
+        </div>
+
+        <!-- Body Worn Camera -->
+        <div class="form-group full" style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:10px 12px;">
+          <label class="lbl" style="color:#fca5a5;">🎥 Was the Body Worn Camera (BWC) activated?</label>
+          <select id="f-bwc" style="border-color:rgba(239,68,68,0.4);">
+            <option value="No" selected>No</option>
+            <option value="Yes">Yes — open the BWC Log after saving this incident</option>
+          </select>
+          <div id="f-bwc-linked" style="display:none;font-size:11px;color:#86efac;margin-top:4px;"></div>
         </div>
 
         <!-- Row 3: Officer / Location -->
@@ -1147,6 +1205,14 @@ button,select,input[type=checkbox],input[type=radio]{
           <label>Change Admin PIN</label>
           <input type="password" id="s-new-pin" maxlength="8" placeholder="New PIN (4–8 digits)">
         </div>
+
+        <hr class="section-divider">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:6px;">💾 Device Storage</div>
+        <p style="font-size:12px;color:var(--text2);line-height:1.6;margin:0 0 10px;">
+          This browser holds about 5 MB. Every AMS file opened from this computer (other sites, the Manager, the ReadOnly) shares that space.
+          Data is only removed after the cloud confirms it has a copy — sites not linked to the cloud are never touched.
+        </p>
+        <div id="ds-panel" style="margin-bottom:6px;"></div>
 
         <hr class="section-divider">
         <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-left:3px solid #ef4444;border-radius:6px;padding:10px 14px;font-size:12px;color:#fca5a5;line-height:1.6;">
@@ -1385,7 +1451,7 @@ button,select,input[type=checkbox],input[type=radio]{
 
       <div style="background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.3);border-radius:8px;padding:14px;margin-bottom:14px;">
         <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:10px;">Safety Checks</div>
-        <div class="safety-checks-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="form-group">
             <label class="lbl">Vest Being Worn?</label>
             <div style="display:flex;gap:8px;margin-top:4px;">
@@ -1405,18 +1471,6 @@ button,select,input[type=checkbox],input[type=radio]{
               <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-keys" value="N/A" id="eq-keys-na"> N/A</label>
             </div>
             <div style="font-size:10px;color:var(--text3);margin-top:4px;">Are you satisfied keys are secure on your person?</div>
-          </div>
-          <div class="form-group">
-            <label class="lbl">Working Earpiece?</label>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="Yes" id="eq-earpiece-yes" style="accent-color:var(--accent);" onclick="document.getElementById('eq-earpiece-reason-row').style.display='none';document.getElementById('eq-earpiece-reason').value=''"> Yes</label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="No" id="eq-earpiece-no" onclick="document.getElementById('eq-earpiece-reason-row').style.display='block'"> No</label>
-              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer;"><input type="radio" name="eq-earpiece" value="N/A" id="eq-earpiece-na" onclick="document.getElementById('eq-earpiece-reason-row').style.display='none';document.getElementById('eq-earpiece-reason').value=''"> N/A</label>
-            </div>
-            <div style="font-size:10px;color:var(--text3);margin-top:4px;">Do you have a working radio earpiece?</div>
-            <div id="eq-earpiece-reason-row" style="display:none;margin-top:8px;">
-              <input type="text" id="eq-earpiece-reason" placeholder="Why no working earpiece?…" style="width:100%;background:var(--bg3);border:1px solid var(--danger);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:12px;outline:none;">
-            </div>
           </div>
         </div>
       </div>
@@ -2372,6 +2426,159 @@ button,select,input[type=checkbox],input[type=radio]{
 </div>
 
 
+<!-- ══ BODY WORN CAMERA LOG MODAL ══ -->
+<div class="modal-overlay" id="bwc-modal" onclick="if(event.target.id==='bwc-modal')closeBwcModal()">
+  <div class="modal" style="max-width:960px;">
+    <div class="modal-hdr" style="background:linear-gradient(135deg,#450a0a,#7f1d1d);">
+      <div class="modal-hdr-icon" style="background:#ef4444;font-size:16px;">🎥</div>
+      <div>
+        <h3>BODY WORN CAMERA LOG</h3>
+        <p>Record every BWC activation and the upload of its footage</p>
+      </div>
+      <button class="modal-close" onclick="closeBwcModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:18px 22px;">
+
+      <div id="bwc-m-linked-note" style="display:none;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#86efac;margin-bottom:14px;line-height:1.5;"></div>
+
+      <!-- New Activation Form -->
+      <div class="form-divider" style="margin-bottom:12px;"><span>BWC Activation</span></div>
+      <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;">
+        <div class="form-group">
+          <label class="lbl">Activation Date <span class="req">*</span></label>
+          <input type="date" id="bwc-m-date" oninput="bwcUpdateDuration()">
+        </div>
+        <div class="form-group">
+          <label class="lbl">Activation Time <span class="req">*</span></label>
+          <input type="time" id="bwc-m-time" oninput="bwcUpdateDuration()">
+        </div>
+        <div class="form-group">
+          <label class="lbl">Deactivation Date <span class="req">*</span></label>
+          <input type="date" id="bwc-m-deact-date" oninput="bwcUpdateDuration()">
+        </div>
+        <div class="form-group">
+          <label class="lbl">Deactivation Time <span class="req">*</span></label>
+          <input type="time" id="bwc-m-deact-time" oninput="bwcUpdateDuration()">
+        </div>
+      </div>
+      <div id="bwc-m-duration" style="font-size:13px;font-weight:700;color:#fcd34d;margin:2px 0 4px;"></div>
+      <div class="bwc-hint" style="margin-bottom:14px;">Times are Adelaide local time (ACST / ACDT). Enter when the camera was switched on and when it was switched off.</div>
+
+      <div class="form-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:14px;">
+        <div class="form-group">
+          <label class="lbl">Guard Name <span class="req">*</span></label>
+          <input type="text" id="bwc-m-guard" list="bwc-m-guard-list" placeholder="Full name" autocomplete="off" oninput="bwcFillGuardId()">
+          <datalist id="bwc-m-guard-list"></datalist>
+        </div>
+        <div class="form-group">
+          <label class="lbl">Guard ID Number <span class="req">*</span></label>
+          <input type="text" id="bwc-m-guard-id" placeholder="e.g. Licence / badge no.">
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:14px;">
+        <div class="form-group">
+          <label class="lbl">Location — Where the BWC Was Activated <span class="req">*</span></label>
+          <input type="text" id="bwc-m-location" placeholder="e.g. Food Court, Level 1 near Coles" style="width:100%;">
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:14px;">
+        <div class="form-group">
+          <label class="lbl">Reason for Activation (7.5) <span class="req">*</span></label>
+          <select id="bwc-m-reason" style="width:100%;">
+            <option value="">— Select reason —</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid" style="grid-template-columns:1fr;margin-bottom:6px;">
+        <div class="form-group">
+          <label class="lbl">Was the Activation Announced to People Present? (7.7) <span class="req">*</span></label>
+          <div class="bwc-yn" id="bwc-m-announce-yn">
+            <button type="button" data-val="Yes" onclick="setBwcAnnounce('Yes')">✓ Yes</button>
+            <button type="button" data-val="No" onclick="setBwcAnnounce('No')">✕ No</button>
+          </div>
+          <div class="bwc-quote">Recommended words: 'This interaction is being recorded on a body-worn camera which captures both video and audio content.'</div>
+        </div>
+      </div>
+      <div id="bwc-m-announce-reason-row" class="form-grid" style="display:none;grid-template-columns:1fr;margin:8px 0 14px;">
+        <div class="form-group">
+          <label class="lbl" style="color:#fca5a5;">Why Was the Activation Not Announced? <span class="req">*</span></label>
+          <textarea id="bwc-m-announce-reason" placeholder="e.g. Not practicable — subject was actively assaulting a member of the public" style="width:100%;min-height:60px;"></textarea>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="form-divider" style="margin:18px 0 12px;"><span>BWC Log</span></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <select id="bwc-m-status-filter" onchange="renderBwcLog()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:6px;font-size:12px;outline:none;color-scheme:dark;">
+          <option value="">All Status</option>
+          <option value="awaiting">Awaiting Uploading of Footage</option>
+          <option value="complete">Uploaded</option>
+        </select>
+        <input type="text" id="bwc-m-search" placeholder="Search…" oninput="renderBwcLog()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:6px;font-family:var(--sans);font-size:12px;outline:none;flex:1;min-width:100px;">
+        <span id="bwc-m-log-count" style="font-size:11px;color:var(--text3);align-self:center;"></span>
+      </div>
+      <div style="overflow-x:auto;border-radius:7px;border:1px solid var(--border);max-height:280px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;">
+          <thead>
+            <tr>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">Activated</th>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">On For</th>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">Guard</th>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">Location</th>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">Reason</th>
+              <th style="background:var(--bg3);color:var(--text3);padding:8px 10px;text-align:left;font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;border-bottom:1px solid var(--border2);position:sticky;top:0;">Status</th>
+              <th style="background:var(--bg3);padding:8px 6px;border-bottom:1px solid var(--border2);position:sticky;top:0;"></th>
+            </tr>
+          </thead>
+          <tbody id="bwc-m-log-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Upload footage sub-form (hidden until needed) -->
+      <div id="bwc-m-close-form" style="display:none;margin-top:14px;padding:14px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.3);border-radius:8px;">
+        <div class="form-divider" style="margin-bottom:12px;"><span style="color:#fca5a5;">Footage Uploaded</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:12px;" id="bwc-m-close-sub"></div>
+        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div class="form-group">
+            <label class="lbl">Footage File Name <span class="req">*</span></label>
+            <input type="text" id="bwc-m-file-name" placeholder="e.g. BWC03_20261002_1432.mp4">
+          </div>
+          <div class="form-group">
+            <label class="lbl">Storage Location <span class="req">*</span></label>
+            <input type="text" id="bwc-m-file-location" placeholder="e.g. Security PC > D:\BWC\2026\October">
+          </div>
+        </div>
+        <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px;">
+          <div class="form-group">
+            <label class="lbl">Date Uploaded <span class="req">*</span></label>
+            <input type="date" id="bwc-m-stored-date">
+          </div>
+          <div class="form-group">
+            <label class="lbl">Time Uploaded <span class="req">*</span></label>
+            <input type="time" id="bwc-m-stored-time">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+          <button onclick="cancelBwcClose()" style="background:none;border:1px solid var(--border2);color:var(--text3);padding:7px 16px;border-radius:6px;font-size:12px;cursor:pointer;font-family:var(--sans);">Cancel</button>
+          <button onclick="confirmBwcClose()" style="background:linear-gradient(135deg,#991b1b,#ef4444);border:none;color:#fff;padding:7px 20px;border-radius:6px;font-family:var(--condensed);font-size:14px;font-weight:800;letter-spacing:0.5px;cursor:pointer;">📤 Confirm Uploaded</button>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" style="background:var(--bg2);">
+      <button class="btn-clear" onclick="closeBwcModal()">Close</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-cancel" onclick="printBwcLog()">🖨 Print / PDF</button>
+        <button class="btn-submit" onclick="activateBwc()" style="background:linear-gradient(135deg,#991b1b,#ef4444);color:#fff;">🎥 Log Activation</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ══ KEYS REGISTER MODAL ══ -->
 <div class="modal-overlay" id="keys-modal" onclick="if(event.target.id==='keys-modal')closeKeysModal()">
   <div class="modal" style="max-width:900px;">
@@ -2559,7 +2766,20 @@ const MONTHS_NAMES  = ['January','February','March','April','May','June','July',
 // ═══════════════════════════════════════════
 // ── STORAGE (incidents + PPE share one JSON file) ──────────────────────────
 const loadData     = () => { try { return JSON.parse(localStorage.getItem(('ams_entry_data_'+getSiteCode()))||'[]'); } catch { return []; } };
-const saveData     = d  => { safeSetItem(('ams_entry_data_'+getSiteCode()), d); scheduleAutoSave(); };
+const saveData     = d  => {
+  const key = 'ams_entry_data_' + getSiteCode();
+  try { localStorage.setItem(key, JSON.stringify(d)); scheduleAutoSave(); return; }
+  catch(e) { if (e.name !== 'QuotaExceededError' && !/quota/i.test(e.message||'')) throw e; }
+  // Storage full. With the cloud linked, older records can be dropped from
+  // this device (the cloud keeps them). Without it, this device is the only
+  // copy — so never trim; stop and tell the user instead.
+  if (getScriptUrl()) {
+    const r = safeSetItem(key, d);
+    if (r.ok) { scheduleAutoSave(); return; }
+  }
+  alert('⚠ Device storage is full — this entry has NOT been saved.\n\nOpen Settings → Device Storage to free up space, then save again.');
+  throw new Error('Device storage full — incident not saved');
+};
 
 // Auto-creates an incident log entry when a register event occurs (isolation
 // issued/restored, permit issued/closed, key issued/returned), so these
@@ -2880,6 +3100,8 @@ window.addEventListener('DOMContentLoaded', () => {
   renderPermitAlert();
   renderKeysAlert();
   renderLostPropertyAlert();
+  renderBwcAlert();
+  setTimeout(dsCheckOnLoad, 3500);
   updateCommsBadge();  updateClock();
   setInterval(updateClock, 1000);
   if (getScriptUrl()) {
@@ -2962,7 +3184,7 @@ function renderReportLinks() {
 }
 
 function clearSiteData() {
-  if (!confirm('Clear all local site data from this browser?\n\nThis removes:\n• All incidents\n• PPE inspections\n• Equipment records\n• Acts Against Security records\n• Isolation, Permit, Key and Lost Property register records\n\nYour cloud/OneDrive file is NOT deleted. After clearing, reload this page to automatically pull the current data from the cloud.\n\nContinue?')) return;
+  if (!confirm('Clear all local site data from this browser?\n\nThis removes:\n• All incidents\n• PPE inspections\n• Equipment records\n• Acts Against Security records\n• Isolation, Permit, Key and Lost Property register records\n• Body Worn Camera log records\n\nYour cloud/OneDrive file is NOT deleted. After clearing, reload this page to automatically pull the current data from the cloud.\n\nContinue?')) return;
   localStorage.removeItem(('ams_entry_data_'+getSiteCode()));
   localStorage.removeItem(('ams_entry_ppe_'+getSiteCode()));
   localStorage.removeItem(('ams_equipment_data_'+getSiteCode()));
@@ -2972,6 +3194,7 @@ function clearSiteData() {
   localStorage.removeItem(('ams_keys_data_'+getSiteCode()));
   localStorage.removeItem(('ams_lostprop_data_'+getSiteCode()));
   localStorage.removeItem(('ams_injury_data_'+getSiteCode()));
+  localStorage.removeItem(('ams_bwc_data_'+getSiteCode()));
   // Also clear any stale fs handle reference
   fsHandle = null;
   fsSetStatus('unlinked', 'Site data cleared — link your site file using the button below');
@@ -2981,6 +3204,7 @@ function clearSiteData() {
   if (typeof renderPermitAlert === 'function') renderPermitAlert();
   if (typeof renderKeysAlert === 'function') renderKeysAlert();
   if (typeof renderLostPropertyAlert === 'function') renderLostPropertyAlert();
+  if (typeof renderBwcAlert === 'function') renderBwcAlert();
   showToast('Site data cleared ✓ — reload the page to pull fresh data from the cloud', 'success');
 }
 
@@ -3074,6 +3298,12 @@ function openForm(id) {
       document.getElementById('f-cmo').value      = r.cmo||'';
       document.getElementById('f-cmo-name').value = r.cmoName||'';
       document.getElementById('f-action').value   = r.action||'';
+      document.getElementById('f-bwc').value      = r.bwcActivated === 'Yes' ? 'Yes' : 'No';
+      const bwcLinkEl = document.getElementById('f-bwc-linked');
+      if (r.linkedBwcId && loadBwc().some(b => b.id === r.linkedBwcId)) {
+        bwcLinkEl.textContent = '✓ Linked BWC log already recorded for this incident';
+        bwcLinkEl.style.display = 'block';
+      } else { bwcLinkEl.style.display = 'none'; }
     }
   } else {
     clearForm(false);
@@ -3130,9 +3360,6 @@ function openEquipModal(mode) {
   document.querySelectorAll('input[name="eq-keys"]').forEach(r=>r.checked=false);
   document.getElementById('eq-vest-reason').value='';
   document.getElementById('eq-vest-reason-row').style.display='none';
-  document.querySelectorAll('input[name="eq-earpiece"]').forEach(r=>r.checked=false);
-  document.getElementById('eq-earpiece-reason').value='';
-  document.getElementById('eq-earpiece-reason-row').style.display='none';
   document.getElementById('eq-m-remarks-out').value = '';
   document.getElementById('eq-m-condition-out').value = 'Good';
   document.getElementById('eq-modal').classList.add('open');
@@ -3173,6 +3400,8 @@ function clearForm(keepModal=true) {
   document.getElementById('f-type').value    = '';
   document.getElementById('f-complete').value= '';
   document.getElementById('f-aas-flag').value= 'No';
+  document.getElementById('f-bwc').value     = 'No';
+  document.getElementById('f-bwc-linked').style.display = 'none';
   syncSecondary();
   setFormDefaults();
   document.getElementById('saveBtn').textContent      = '✦ Save Incident';
@@ -3206,6 +3435,8 @@ function saveIncident() {
     cmo:       document.getElementById('f-cmo').value.trim(),
     cmoName:   document.getElementById('f-cmo-name').value.trim(),
     action:    document.getElementById('f-action').value.trim(),
+    bwcActivated: document.getElementById('f-bwc').value === 'Yes' ? 'Yes' : 'No',
+    linkedBwcId:  existing?.linkedBwcId || '',
     site:      getSiteName(),
     siteCode:  getSiteCode(),
     createdAt: existing?.createdAt || new Date().toISOString(),
@@ -3222,6 +3453,12 @@ function saveIncident() {
   renderLog();
   saveOfficerName(document.getElementById('f-officer').value);
   showToast(editingId ? 'Incident updated ✓' : 'Incident saved ✓', 'success');
+  // BWC activated — open the BWC Log pre-filled from this incident, unless
+  // this incident already has a linked BWC log recorded.
+  const bwcAlreadyLinked = record.linkedBwcId && loadBwc().some(b => b.id === record.linkedBwcId);
+  if (record.bwcActivated === 'Yes' && !bwcAlreadyLinked) {
+    setTimeout(() => openBwcModal({ fromIncident: record }), 250);
+  }
 }
 function deleteEditingRecord() {
   if (!editingId) return;
@@ -3354,6 +3591,7 @@ function checkPin() {
     document.getElementById('pin-gate').style.display       = 'none';
     document.getElementById('settings-content').style.display = 'block';
     document.getElementById('settings-footer').style.display  = 'flex';
+    try { renderDeviceStorage(); } catch(e) { console.warn('Device storage panel failed:', e); }
     const s = loadSettings();
     document.getElementById('s-site-name').value     = s.siteName     || SITE_CONFIG.name;
     document.getElementById('s-policy-site-name').value = s.policySiteName||'';
@@ -3939,8 +4177,14 @@ function importBackup(e) {
         const addedKeys = parsed.keys.filter(r=>!keyIds.has(r.id));
         if (addedKeys.length) saveKeysData([...curKeys,...addedKeys]);
       }
+      if (Array.isArray(parsed.bodyWornCamera) && parsed.bodyWornCamera.length) {
+        const curBwc = loadBwc();
+        const bwcIds = new Set(curBwc.map(r=>r.id));
+        const addedBwc = parsed.bodyWornCamera.filter(r=>!bwcIds.has(r.id));
+        if (addedBwc.length) saveBwcData([...curBwc,...addedBwc]);
+      }
       renderLog();
-      renderIsolationAlert(); renderPermitAlert(); renderKeysAlert(); renderLostPropertyAlert();
+      renderIsolationAlert(); renderPermitAlert(); renderKeysAlert(); renderLostPropertyAlert(); renderBwcAlert();
       showToast(`Imported ${added.length} new record(s)`,'success');
     } catch(err) { showToast('Invalid file: '+err.message,'error'); }
   };
@@ -4051,7 +4295,8 @@ async function fsWrite(handle) {
       equipment:           loadEQ(),
       isolations:          loadIsolations(),
       permits:             loadPermits(),
-      keys:                loadKeys()
+      keys:                loadKeys(),
+      bodyWornCamera:      loadBwc()
     };
 
     // Read current file first and merge — preserves manager edits
@@ -4089,6 +4334,7 @@ async function fsWrite(handle) {
           isolations:          merge(existing.isolations,          local.isolations),
           permits:             merge(existing.permits,             local.permits),
           keys:                merge(existing.keys,                local.keys),
+          bodyWornCamera:      merge(existing.bodyWornCamera,      local.bodyWornCamera),
         };
       }
     } catch(e) {
@@ -4112,15 +4358,15 @@ async function fsReload() {
     const incidents = Array.isArray(raw) ? raw : (raw.incidents || []);
     const ppe       = Array.isArray(raw) ? [] : (raw.ppeInspections || []);
     // REPLACE all local data with what's in the file (prevents stale data from previous sites)
-    localStorage.setItem(('ams_entry_data_'+getSiteCode()), JSON.stringify(incidents));
-    localStorage.setItem(('ams_entry_ppe_'+getSiteCode()),  JSON.stringify(ppe));
+    safeSetItem(('ams_entry_data_'+getSiteCode()), trimForDevice('incidents', incidents, incidents));
+    safeSetItem(('ams_entry_ppe_'+getSiteCode()), trimForDevice('ppeInspections', ppe, ppe));
     if (Array.isArray(raw.actsAgainstSecurity)) {
       safeSetItem(('ams_aas_data_'+getSiteCode()), raw.actsAgainstSecurity);
     } else {
       safeSetItem(('ams_aas_data_'+getSiteCode()), []);
     }
     if (Array.isArray(raw.equipment)) {
-      localStorage.setItem(('ams_equipment_data_'+getSiteCode()), JSON.stringify(raw.equipment));
+      safeSetItem(('ams_equipment_data_'+getSiteCode()), trimForDevice('equipment', raw.equipment, raw.equipment));
     } else {
       localStorage.setItem(('ams_equipment_data_'+getSiteCode()), '[]');
     }
@@ -4197,11 +4443,11 @@ async function fsRestoreHandle() {
       const incidents = Array.isArray(raw) ? raw : (raw.incidents || []);
       const ppe       = Array.isArray(raw) ? [] : (raw.ppeInspections || []);
       // Always replace local data with file data to prevent cross-site bleed
-      localStorage.setItem(('ams_entry_data_'+getSiteCode()), JSON.stringify(incidents));
-      localStorage.setItem(('ams_entry_ppe_'+getSiteCode()),  JSON.stringify(ppe));
+      safeSetItem(('ams_entry_data_'+getSiteCode()), trimForDevice('incidents', incidents, incidents));
+      safeSetItem(('ams_entry_ppe_'+getSiteCode()), trimForDevice('ppeInspections', ppe, ppe));
       if (Array.isArray(raw.actsAgainstSecurity)) safeSetItem(('ams_aas_data_'+getSiteCode()), raw.actsAgainstSecurity);
       else safeSetItem(('ams_aas_data_'+getSiteCode()), []);
-      if (Array.isArray(raw.equipment)) localStorage.setItem(('ams_equipment_data_'+getSiteCode()), JSON.stringify(raw.equipment));
+      if (Array.isArray(raw.equipment)) safeSetItem(('ams_equipment_data_'+getSiteCode()), trimForDevice('equipment', raw.equipment, raw.equipment));
       else localStorage.setItem(('ams_equipment_data_'+getSiteCode()), '[]');
       renderLog(); showToast('Loaded from ' + handle.name + ' ✓','success');
       fsSetStatus('linked', `📁 <strong>${handle.name}</strong> — ready · auto-saves on every entry`);
@@ -4261,6 +4507,9 @@ function openDetail(id) {
     { label:'CMO Notified',    value: r.cmo                     },
     { label:'CMO Name',        value: r.cmoName                 },
     { label:'Further Action',  value: r.action,    full: true   },
+    { label:'BWC Activated',   value: r.bwcActivated === 'Yes'
+        ? ('Yes' + (r.linkedBwcId && loadBwc().some(b => b.id === r.linkedBwcId) ? ' — BWC log recorded' : ' — ⚠ no BWC log linked yet'))
+        : (r.bwcActivated || '') },
   ];
 
   const grid = document.getElementById('detail-grid');
@@ -5044,13 +5293,6 @@ function eqSignOut() {
   if (!date)     { showToast('Please enter a date', 'error'); return; }
   if (!timeOut)  { showToast('Please enter time out', 'error'); return; }
   if (!equipment.length && !other) { showToast('Please select at least one item', 'error'); return; }
-  const earpieceVal = document.querySelector('input[name="eq-earpiece"]:checked')?.value || '';
-  if (!earpieceVal) { showToast('Please answer the working earpiece check', 'error'); return; }
-  if (earpieceVal === 'No' && !document.getElementById('eq-earpiece-reason').value.trim()) {
-    showToast('Please explain why you do not have a working earpiece', 'error');
-    document.getElementById('eq-earpiece-reason').focus();
-    return;
-  }
 
   const dt    = new Date(date);
   const month = EQ_MONTHS[dt.getMonth()] + ' ' + dt.getFullYear();
@@ -5063,8 +5305,6 @@ function eqSignOut() {
     vestWorn:   document.querySelector('input[name="eq-vest"]:checked')?.value || '',
     vestReason: document.getElementById('eq-vest-reason')?.value.trim() || '',
     keysSecure: document.querySelector('input[name="eq-keys"]:checked')?.value || '',
-    earpieceWorking: document.querySelector('input[name="eq-earpiece"]:checked')?.value || '',
-    earpieceReason:  document.getElementById('eq-earpiece-reason')?.value.trim() || '',
     timeOut,
     conditionOut: document.getElementById('eq-m-condition-out').value,
     remarksOut:   document.getElementById('eq-m-remarks-out').value.trim(),
@@ -5101,9 +5341,7 @@ function eqSignOut() {
       time:      timeOut,
       officer:   operator,
       location:  getSiteName(),
-      details:   'Signed on. Equipment signed out: ' + [...equipment, ...(other?[other]:[])].join(', ')
-                 + '. Working earpiece: ' + earpieceVal
-                 + (earpieceVal === 'No' ? ' (' + document.getElementById('eq-earpiece-reason').value.trim() + ')' : '') + '.',
+      details:   'Signed on. Equipment signed out: ' + [...equipment, ...(other?[other]:[])].join(', '),
       ref: '', complete: '', cmo: '', cmoName: '', action: '',
       site:      getSiteName(),
       siteCode:  getSiteCode(),
@@ -6094,6 +6332,7 @@ async function syncToScript() {
     permits:             loadPermits(),
     keys:                loadKeys(),
     lostProperty:        loadLostProperty(),
+    bodyWornCamera:      loadBwc(),
     workplaceInjuries:   loadInjuries(),
     commsLog:            loadComms(),
     deletedIds:          JSON.parse(localStorage.getItem('ams_deleted_ids_'+siteCode)||'[]'),
@@ -6169,6 +6408,152 @@ function diagnoseStorage() {
   return rows;
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// DEVICE STORAGE — shows what is using this browser's storage and frees it
+// safely. Browser storage is ~5 MB per origin; every HTML file opened from
+// the local disk (file://) shares ONE bucket, so other site files, the
+// Manager and the ReadOnly opened on the same computer all count against it.
+// Nothing is ever removed unless the cloud has confirmed it holds a copy.
+// ═══════════════════════════════════════════════════════════
+const DS_LIMIT_CHARS = 5 * 1024 * 1024;   // browsers allow ~5 million characters
+const DS_SITE_PREFIXES = ['entry_data','entry_ppe','aas_data','equipment_data','isolation_data','permit_data',
+  'keys_data','lostprop_data','injury_data','bwc_data','comms','deleted_ids','entry_cats','officers','pending'];
+const DS_SITE_DATA_PREFIXES = ['entry_data','entry_ppe','aas_data','equipment_data','isolation_data','permit_data',
+  'keys_data','lostprop_data','injury_data','bwc_data','comms'];
+const DS_RE_SITE = new RegExp('^ams_(' + DS_SITE_PREFIXES.join('|') + ')_(.+)$');
+
+function dsFmt(chars) {
+  return chars >= 1024*1024 ? (chars/1024/1024).toFixed(2) + ' MB' : Math.max(1, Math.round(chars/1024)) + ' KB';
+}
+function dsScan() {
+  const groups = {};   // id -> { label, chars, keys[], kind, code }
+  const add = (id, label, kind, code, k, n) => {
+    const g = groups[id] || (groups[id] = { id, label, kind, code, chars: 0, keys: [] });
+    g.chars += n; g.keys.push(k);
+  };
+  const siteNames = {};
+  loadSitesList().forEach(c => { if (c && c.code) siteNames[c.code] = c.name || c.code; });
+  const cur = getSiteCode();
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    const n = k.length + (localStorage.getItem(k) || '').length;
+    total += n;
+    const m = k.match(DS_RE_SITE);
+    if (m && m[2] !== 'default') {
+      const code = m[2];
+      add('site:'+code, (siteNames[code] || code) + (code === cur ? ' (this site)' : ''), code === cur ? 'current' : 'site', code, k, n);
+    } else if (/^ams_(site_|mgr_|aas_seen|injury_seen|wufoo|ytd|backup)/.test(k)) {
+      add('mgr', 'Manager / ReadOnly cache (opened on this computer)', 'mgr', '', k, n);
+    } else {
+      add('other', 'Settings & other', 'other', '', k, n);
+    }
+  }
+  const list = Object.values(groups).sort((a,b) =>
+    (a.kind === 'current' ? -1 : b.kind === 'current' ? 1 : 0) || b.chars - a.chars);
+  return { total, list };
+}
+
+function renderDeviceStorage() {
+  const box = document.getElementById('ds-panel');
+  if (!box) return;
+  const { total, list } = dsScan();
+  const pct = Math.min(100, Math.round(total / DS_LIMIT_CHARS * 100));
+  const col = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#22c55e';
+  const cfgByCode = {};
+  loadSitesList().forEach(c => { if (c && c.code) cfgByCode[c.code] = c; });
+
+  let rows = '';
+  list.forEach(g => {
+    let action = '';
+    if (g.kind === 'current') {
+      action = getScriptUrl()
+        ? '<button class="btn-smod-outline ds-btn" onclick="dsFreeCurrent()">Sync &amp; trim</button>'
+        : '<span class="ds-note">Not cloud-linked — only copy, kept</span>';
+    } else if (g.kind === 'site') {
+      const cfg = cfgByCode[g.code];
+      action = (cfg && cfg.scriptUrl)
+        ? '<button class="btn-smod-outline ds-btn" onclick="dsRemoveSite(\'' + esc(g.code) + '\')">Sync &amp; remove</button>'
+        : '<span class="ds-note">Not cloud-linked — only copy, kept</span>';
+    } else if (g.kind === 'mgr') {
+      action = '<button class="btn-smod-outline ds-btn" onclick="dsClearMgrCache()">Clear cache</button>';
+    }
+    rows += '<tr><td>' + esc(g.label) + '</td><td style="text-align:right;white-space:nowrap;font-weight:700;">' + dsFmt(g.chars) + '</td><td style="text-align:right;">' + action + '</td></tr>';
+  });
+
+  box.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">'
+    + '<span style="font-size:13px;font-weight:700;color:var(--text);">' + dsFmt(total) + ' of ~5 MB used</span>'
+    + '<span style="font-size:13px;font-weight:800;color:' + col + ';">' + pct + '%</span></div>'
+    + '<div style="height:10px;background:var(--bg3);border-radius:5px;overflow:hidden;margin-bottom:12px;">'
+    + '<div style="height:100%;width:' + pct + '%;background:' + col + ';"></div></div>'
+    + '<table class="ds-table"><tbody>' + rows + '</tbody></table>';
+}
+
+// This site: push everything to the cloud, then reload from it — the reload
+// keeps only last month + this month + anything still open on the device.
+async function dsFreeCurrent() {
+  if (!getScriptUrl()) return;
+  const before = dsScan().total;
+  showToast('Syncing to cloud, then trimming this device…', 'info');
+  try {
+    await syncToScript();
+    await pullFromScript();
+  } catch(e) { showToast('Could not reach the cloud — nothing was removed', 'error'); return; }
+  renderDeviceStorage();
+  const freed = before - dsScan().total;
+  showToast(freed > 1024 ? 'Freed ' + dsFmt(freed) + ' ✓ — full history stays in the cloud' : 'This site is already trimmed — nothing more to free here', 'success');
+}
+
+// Another site's data on this device: only removed once its cloud confirms it
+// has received every record (a confirmed {ok:true} response, not a blind send).
+async function dsRemoveSite(code) {
+  const cfg = loadSitesList().find(c => c && c.code === code);
+  if (!cfg || !cfg.scriptUrl) { showToast('That site is not cloud-linked — its data was kept', 'error'); return; }
+  const name = cfg.name || code;
+  if (!confirm('Remove ' + name + '’s records from THIS device?\n\nEverything is sent to the cloud first and only removed if the cloud confirms it received it. Switching back to ' + name + ' later re-downloads its recent records.')) return;
+  const get = (p) => { try { return JSON.parse(localStorage.getItem('ams_' + p + '_' + code) || '[]'); } catch { return []; } };
+  const payload = {
+    siteCode: code,
+    incidents: get('entry_data'), ppeInspections: get('entry_ppe'), actsAgainstSecurity: get('aas_data'),
+    equipment: get('equipment_data'), isolations: get('isolation_data'), permits: get('permit_data'),
+    keys: get('keys_data'), lostProperty: get('lostprop_data'), workplaceInjuries: get('injury_data'),
+    bodyWornCamera: get('bwc_data'), commsLog: get('comms'),
+    deletedIds: get('deleted_ids'),
+  };
+  showToast('Sending ' + name + ' to the cloud…', 'info');
+  let ok = false;
+  try {
+    const form = new URLSearchParams();
+    form.append('payload', JSON.stringify(payload));
+    const resp = await fetch(cfg.scriptUrl, { method: 'POST', body: form });
+    const result = await resp.json();
+    ok = !!(result && result.ok);
+  } catch(e) { ok = false; }
+  if (!ok) { showToast('Cloud did not confirm the upload — ' + name + '’s data was kept on this device', 'error'); return; }
+  DS_SITE_DATA_PREFIXES.forEach(p => localStorage.removeItem('ams_' + p + '_' + code));
+  renderDeviceStorage();
+  showToast(name + ' removed from this device ✓ — it is safe in the cloud', 'success');
+}
+
+function dsClearMgrCache() {
+  if (!confirm('Clear the Manager / ReadOnly cache stored in this browser?\n\nThese are copies of cloud data saved when the Manager or ReadOnly was opened from a file on this computer. They re-download from the cloud next time they are opened.\n\nOnly do this if any changes made in the Manager have already been synced.')) return;
+  const { list } = dsScan();
+  const g = list.find(x => x.kind === 'mgr');
+  if (g) g.keys.forEach(k => localStorage.removeItem(k));
+  renderDeviceStorage();
+  showToast('Manager / ReadOnly cache cleared ✓', 'success');
+}
+
+// Warn once per session when storage is getting full, and point to the fix.
+function dsCheckOnLoad() {
+  try {
+    const pct = dsScan().total / DS_LIMIT_CHARS * 100;
+    if (pct >= 85) showToast('⚠ Device storage ' + Math.round(pct) + '% full — Settings → Device Storage to free space', 'error');
+  } catch(e) {}
+}
+
 function safeSetItem(key, arr) {
   try {
     localStorage.setItem(key, JSON.stringify(arr));
@@ -6193,6 +6578,57 @@ function safeSetItem(key, arr) {
   // than wiping it out with a failed write.
   console.error(`Storage quota exceeded for ${key} even at the smallest fallback — leaving existing local cache untouched.`);
   return { ok: false, trimmed: true };
+}
+
+// ═══════════════════════════════════════════
+// DEVICE RETENTION — keep only recent records on this device
+// ═══════════════════════════════════════════
+// The cloud file (Apps Script / linked file) always holds the full history;
+// the Manager and ReadOnly read from there. Each guard device only caches:
+//   • everything dated from the 1st of LAST month onwards (current + previous month)
+//   • anything still open, however old (isolations, keys out, active permits,
+//     lost property in storage, equipment still out, BWC recording / footage
+//     pending, unacknowledged comms)
+//   • historical-stats records (so re-entering a month can't duplicate it)
+//   • anything the cloud doesn't have yet, or where this device's copy is
+//     newer than the cloud's — so an unsynced entry or edit is never dropped.
+// Sync only ever ADDS / UPDATES records on the cloud (merge by id), so a
+// trimmed device can never delete cloud history.
+function deviceRetentionCutoff() {
+  const n = new Date();
+  const d = new Date(n.getFullYear(), n.getMonth() - 1, 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01';
+}
+function deviceRecordDate(kind, r) {
+  if (kind === 'commsLog') return (r.createdAt || '').slice(0, 10);
+  return r.date || r.dateFound || r.activationDate || (r.createdAt || '').slice(0, 10) || '';
+}
+const DEVICE_KEEP_OPEN = {
+  incidents:      r => !!r['__historical__'],
+  equipment:      r => !r.timeIn,
+  isolations:     r => r.status === 'Isolated',
+  permits:        r => r.status === 'Active',
+  keys:           r => r.status === 'Out',
+  lostProperty:   r => r.status === 'In Storage',
+  bodyWornCamera: r => r.footageUploaded !== 'Yes',
+  commsLog:       r => !(r.acknowledgements || []).length,
+};
+function trimForDevice(kind, merged, cloudArr) {
+  if (!Array.isArray(merged)) return [];
+  const cloudById = {};
+  (cloudArr || []).forEach(r => { if (r && r.id) cloudById[r.id] = r; });
+  const cutoff = deviceRetentionCutoff();
+  const keepOpen = DEVICE_KEEP_OPEN[kind];
+  return merged.filter(r => {
+    if (!r) return false;
+    const c = cloudById[r.id];
+    if (!c) return true;                                   // not in cloud yet — never drop
+    const localTime = new Date(r.updatedAt || r.createdAt || 0).getTime();
+    const cloudTime = new Date(c.updatedAt || c.createdAt || 0).getTime();
+    if (localTime > cloudTime) return true;                // unsynced local edit
+    if (deviceRecordDate(kind, r) >= cutoff) return true;  // recent
+    return !!(keepOpen && keepOpen(r));                    // still open
+  });
 }
 
 // Pull latest data from Apps Script (called on page load if script URL set)
@@ -6222,29 +6658,32 @@ async function pullFromScript() {
       return Object.values(byId);
     };
     const results = [
-      safeSetItem(('ams_entry_data_'+getSiteCode()), merge(d.incidents, loadData())),
-      safeSetItem(('ams_entry_ppe_'+getSiteCode()),  merge(d.ppeInspections, loadPPE())),
-      safeSetItem(('ams_aas_data_'+getSiteCode()),   merge(d.actsAgainstSecurity, loadAAS())),
-      safeSetItem(('ams_equipment_data_'+getSiteCode()), merge(d.equipment, loadEQ())),
-      safeSetItem(('ams_isolation_data_'+getSiteCode()), merge(d.isolations, loadIsolations())),
-      safeSetItem(('ams_permit_data_'+getSiteCode()), merge(d.permits, loadPermits())),
-      safeSetItem(('ams_keys_data_'+getSiteCode()), merge(d.keys, loadKeys())),
-      safeSetItem(('ams_lostprop_data_'+getSiteCode()), merge(d.lostProperty, loadLostProperty())),
-      safeSetItem(('ams_injury_data_'+getSiteCode()), merge(d.workplaceInjuries, loadInjuries())),
+      safeSetItem(('ams_entry_data_'+getSiteCode()), trimForDevice('incidents', merge(d.incidents, loadData()), d.incidents)),
+      safeSetItem(('ams_entry_ppe_'+getSiteCode()), trimForDevice('ppeInspections', merge(d.ppeInspections, loadPPE()), d.ppeInspections)),
+      safeSetItem(('ams_aas_data_'+getSiteCode()), trimForDevice('actsAgainstSecurity', merge(d.actsAgainstSecurity, loadAAS()), d.actsAgainstSecurity)),
+      safeSetItem(('ams_equipment_data_'+getSiteCode()), trimForDevice('equipment', merge(d.equipment, loadEQ()), d.equipment)),
+      safeSetItem(('ams_isolation_data_'+getSiteCode()), trimForDevice('isolations', merge(d.isolations, loadIsolations()), d.isolations)),
+      safeSetItem(('ams_permit_data_'+getSiteCode()), trimForDevice('permits', merge(d.permits, loadPermits()), d.permits)),
+      safeSetItem(('ams_keys_data_'+getSiteCode()), trimForDevice('keys', merge(d.keys, loadKeys()), d.keys)),
+      safeSetItem(('ams_lostprop_data_'+getSiteCode()), trimForDevice('lostProperty', merge(d.lostProperty, loadLostProperty()), d.lostProperty)),
+      safeSetItem(('ams_injury_data_'+getSiteCode()), trimForDevice('workplaceInjuries', merge(d.workplaceInjuries, loadInjuries()), d.workplaceInjuries)),
+      safeSetItem(('ams_bwc_data_'+getSiteCode()), trimForDevice('bodyWornCamera', merge(d.bodyWornCamera, loadBwc()), d.bodyWornCamera)),
     ];
     // Merge commsLog from cloud into local storage
     if (d.commsLog && d.commsLog.length) {
-      const mergedComms = merge(d.commsLog, loadComms());
+      const mergedComms = trimForDevice('commsLog', merge(d.commsLog, loadComms()), d.commsLog);
       try { localStorage.setItem(commsStorageKey(), JSON.stringify(mergedComms)); } catch(e) {}
     }
     renderLog(); renderEqLog();
-    renderIsolationAlert(); renderPermitAlert(); renderKeysAlert(); renderLostPropertyAlert();
+    renderIsolationAlert(); renderPermitAlert(); renderKeysAlert(); renderLostPropertyAlert(); renderBwcAlert();
     updateCommsBadge();
     const anyTrimmed = results.some(r => r.trimmed && r.ok);
-    if (anyTrimmed) {
+    if (results.some(r => !r.ok)) {
+      fsSetStatus('error', '⚠ Device storage full — some records could not be cached. Cloud copy is safe.');
+    } else if (anyTrimmed) {
       fsSetStatus('linked', '☁ Synced (local cache trimmed to fit) — ' + new Date().toLocaleTimeString());
     } else {
-      fsSetStatus('linked', '☁ Synced — ' + new Date().toLocaleTimeString());
+      fsSetStatus('linked', '☁ Synced — ' + new Date().toLocaleTimeString() + ' · this device keeps records from ' + bwcFmtDate(deviceRetentionCutoff()) + ' (full history in cloud)');
     }
   } catch(err) {
     console.warn('Pull failed:', err);
@@ -7572,6 +8011,522 @@ function printKeysRegister() {
 
 
 
+
+
+// ═══════════════════════════════════════════════════════════
+// BODY WORN CAMERA (BWC) LOG
+// Records each activation (date/time, guard name + ID, location, 7.5 reason,
+// 7.7 announcement) and the footage upload (file name, storage location,
+// date/time uploaded). A record stays "Awaiting Uploading of Footage" until
+// the upload details are entered — that drives the landing-screen banner.
+// ═══════════════════════════════════════════════════════════
+const BWC_REASONS = [
+  { code: '7.5(a)', text: 'An incident has occurred or is occurring that requires a security response (e.g. theft, vandalism, aggression, threats or assaults)' },
+  { code: '7.5(b)', text: 'Recording is reasonably necessary to protect the lawful interests of the client, the Security Personnel member or another person (e.g. to preserve evidence of a confrontational interaction)' },
+  { code: '7.5(c)', text: 'Recording is reasonably necessary to respond to a serious threat to the life, health or safety of any individual, or to public health or safety' },
+];
+const BWC_GUARD_IDS_KEY = 'ams_bwc_guard_ids';
+
+// ── Robustness wrappers ──────────────────────────────────────────────────
+// Any unexpected error in the BWC Log is shown on screen (guards' devices
+// have no console), rather than the button silently doing nothing.
+function bwcUuid() {
+  if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return 'bwc-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+}
+function bwcShowError(where, e) {
+  console.error('BWC ' + where + ' failed:', e);
+  alert('⚠ Body Worn Camera Log — ' + where + ' failed.\n\n' + (e && e.name ? e.name + ': ' : '') + (e && e.message ? e.message : String(e)) +
+        '\n\nPlease screenshot this message and send it to Jeremy.');
+}
+function bwcFieldError(id, msg) {
+  showToast(msg, 'error');
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.add('bwc-field-err');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (el.focus && el.tagName !== 'DIV') { try { el.focus({ preventScroll: true }); } catch(_) {} }
+    const clear = () => el.classList.remove('bwc-field-err');
+    el.addEventListener('input', clear, { once: true });
+    el.addEventListener('change', clear, { once: true });
+    el.addEventListener('click', clear, { once: true });
+  }
+  return false;
+}
+function activateBwc()        { try { _activateBwc(); }        catch(e) { bwcShowError('Log Activation', e); } }
+function confirmBwcClose()    { try { _confirmBwcClose(); }    catch(e) { bwcShowError('Footage upload save', e); } }
+function openBwcModal(opts)   { try { _openBwcModal(opts); }   catch(e) { bwcShowError('Opening the log', e); } }
+
+
+const loadBwc = () => { try { return JSON.parse(localStorage.getItem(('ams_bwc_data_'+getSiteCode()))||'[]'); } catch { return []; } };
+function saveBwcData(d) {
+  safeSetItem(('ams_bwc_data_'+getSiteCode()), d);
+  scheduleAutoSave();
+}
+
+let bwcAnnounce     = '';    // 'Yes' | 'No'
+let bwcCloseId      = null;  // record open in the footage-upload sub-form
+let bwcPendingIncId = null;  // incident waiting to be linked to a new activation
+
+function bwcTodayStr(d) {
+  const n = d || new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
+}
+function bwcFmtDate(iso) {
+  const [y,m,d] = (iso||'').split('-');
+  return d ? d+'/'+m+'/'+y : (iso||'—');
+}
+function bwcStatus(r) {
+  return r.footageUploaded === 'Yes' ? 'complete' : 'awaiting';
+}
+// Minutes between two date+time pairs (null if incomplete or negative)
+function bwcMinutesBetween(d1, t1, d2, t2) {
+  if (!d1 || !t1 || !d2 || !t2) return null;
+  const a = new Date(d1 + 'T' + t1), b = new Date(d2 + 'T' + t2);
+  if (isNaN(a) || isNaN(b)) return null;
+  return Math.round((b - a) / 60000);
+}
+function bwcFmtDuration(mins) {
+  if (mins === null || mins === undefined || mins === '' || isNaN(mins) || mins < 0) return '—';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return h ? (h + ' hr' + (m ? ' ' + m + ' min' : '')) : (m + ' min');
+}
+function bwcRecordDuration(r) {
+  return bwcMinutesBetween(r.activationDate, r.activationTime, r.deactivationDate, r.deactivationTime);
+}
+function bwcUpdateDuration() {
+  const el = document.getElementById('bwc-m-duration');
+  if (!el) return;
+  const mins = bwcMinutesBetween(
+    document.getElementById('bwc-m-date').value, document.getElementById('bwc-m-time').value,
+    document.getElementById('bwc-m-deact-date').value, document.getElementById('bwc-m-deact-time').value);
+  if (mins === null) { el.textContent = ''; return; }
+  if (mins < 0) { el.style.color = '#fca5a5'; el.textContent = '⚠ Deactivation is before activation — please check the times'; return; }
+  el.style.color = '#fcd34d';
+  el.textContent = '⏱ BWC on for ' + bwcFmtDuration(mins);
+}
+function bwcReasonLabel(code) {
+  const r = BWC_REASONS.find(x => x.code === code);
+  return r ? r.code + ' — ' + r.text : (code || '');
+}
+
+// Guard ID memory — remembers each guard's ID number on this device so it
+// auto-fills next time their name is entered.
+function bwcGuardIds() { try { return JSON.parse(localStorage.getItem(BWC_GUARD_IDS_KEY)||'{}'); } catch { return {}; } }
+function bwcRememberGuardId(name, id) {
+  if (!name || !id) return;
+  const m = bwcGuardIds(); m[name.trim().toLowerCase()] = id.trim();
+  try { localStorage.setItem(BWC_GUARD_IDS_KEY, JSON.stringify(m)); } catch(e) {}
+}
+function bwcFillGuardId() {
+  const name = document.getElementById('bwc-m-guard').value.trim().toLowerCase();
+  const idEl = document.getElementById('bwc-m-guard-id');
+  const known = bwcGuardIds()[name];
+  if (known && !idEl.value) idEl.value = known;
+}
+
+// Guards currently signed on (equipment out), then recently used names.
+function bwcSignedOnGuards() {
+  const out = loadEQ().filter(r => !r.timeIn && r.operator).map(r => r.operator);
+  return [...new Set(out)];
+}
+function bwcBuildGuardList() {
+  const signedOn = bwcSignedOnGuards();
+  const recent = (typeof getStoredOfficers === 'function') ? getStoredOfficers() : [];
+  const names = [...new Set([...signedOn, ...recent, ...loadBwc().map(r => r.guardName).filter(Boolean)])];
+  document.getElementById('bwc-m-guard-list').innerHTML = names.map(n => '<option value="'+esc(n)+'">').join('');
+  return signedOn;
+}
+
+function setBwcYN(groupId, val) {
+  document.querySelectorAll('#'+groupId+' button').forEach(b => {
+    b.classList.remove('sel-yes','sel-no');
+    if (b.dataset.val === val) b.classList.add(val === 'Yes' ? 'sel-yes' : 'sel-no');
+  });
+}
+function setBwcAnnounce(val) {
+  bwcAnnounce = val;
+  setBwcYN('bwc-m-announce-yn', val);
+  document.getElementById('bwc-m-announce-reason-row').style.display = val === 'No' ? 'grid' : 'none';
+  if (val !== 'No') document.getElementById('bwc-m-announce-reason').value = '';
+}
+
+
+function bwcResetActivationForm() {
+  const n = new Date();
+  document.getElementById('bwc-m-date').value = bwcTodayStr(n);
+  document.getElementById('bwc-m-time').value = n.toTimeString().slice(0,5);
+  document.getElementById('bwc-m-deact-date').value = bwcTodayStr(n);
+  document.getElementById('bwc-m-deact-time').value = n.toTimeString().slice(0,5);
+  document.getElementById('bwc-m-location').value = '';
+  document.getElementById('bwc-m-reason').value = '';
+  document.getElementById('bwc-m-guard-id').value = '';
+  document.getElementById('bwc-m-announce-reason').value = '';
+  bwcAnnounce = '';
+  setBwcYN('bwc-m-announce-yn', '');
+  document.getElementById('bwc-m-announce-reason-row').style.display = 'none';
+}
+
+// opts.fromIncident — an incident record whose form answered "BWC activated: Yes"
+function _openBwcModal(opts) {
+  opts = opts || {};
+  const sel = document.getElementById('bwc-m-reason');
+  if (sel.options.length <= 1) {
+    BWC_REASONS.forEach(r => sel.appendChild(new Option(r.code + ' — ' + r.text, r.code)));
+  }
+  bwcResetActivationForm();
+  const signedOn = bwcBuildGuardList();
+  // Auto-fill guard: the only guard signed on, else the last operator on this device
+  document.getElementById('bwc-m-guard').value =
+    signedOn.length === 1 ? signedOn[0] : (loadSettings().lastOperator || '');
+
+  const note = document.getElementById('bwc-m-linked-note');
+  bwcPendingIncId = null;
+  if (opts.fromIncident) {
+    const inc = opts.fromIncident;
+    bwcPendingIncId = inc.id;
+    if (inc.date)     document.getElementById('bwc-m-date').value = inc.date;
+    if (inc.time)     document.getElementById('bwc-m-time').value = inc.time;
+    if (inc.officer)  document.getElementById('bwc-m-guard').value = inc.officer;
+    if (inc.location) document.getElementById('bwc-m-location').value = inc.location;
+    note.innerHTML = '🔗 Linked to incident: <strong>' + esc(inc.type || 'Incident') + '</strong> · ' + bwcFmtDate(inc.date) + ' ' + esc(inc.time || '') +
+      '<br>Details from the incident have been filled in — check them, then complete the reason and announcement and tap <strong>Log Activation</strong>.';
+    note.style.display = 'block';
+  } else {
+    note.style.display = 'none';
+  }
+  bwcFillGuardId();
+  bwcUpdateDuration();
+  cancelBwcClose();
+  document.getElementById('bwc-m-search').value = '';
+  document.getElementById('bwc-m-status-filter').value = '';
+  renderBwcLog();
+  document.getElementById('bwc-modal').classList.add('open');
+}
+
+function closeBwcModal() {
+  if (bwcPendingIncId) {
+    if (!confirm('This incident was recorded as a BWC activation, but no BWC log has been saved for it yet.\n\nClose anyway? (You can log it later from the Body Worn Camera Log tile.)')) return;
+    bwcPendingIncId = null;
+  }
+  document.getElementById('bwc-modal').classList.remove('open');
+}
+
+function _activateBwc() {
+  const date      = document.getElementById('bwc-m-date').value;
+  const time      = document.getElementById('bwc-m-time').value;
+  const guardName = document.getElementById('bwc-m-guard').value.trim();
+  const guardId   = document.getElementById('bwc-m-guard-id').value.trim();
+  const location  = document.getElementById('bwc-m-location').value.trim();
+  const reason    = document.getElementById('bwc-m-reason').value;
+  const annReason = document.getElementById('bwc-m-announce-reason').value.trim();
+
+  if (!date)      { return bwcFieldError('bwc-m-date', 'Please enter the activation date'); }
+  if (!time)      { return bwcFieldError('bwc-m-time', 'Please enter the activation time'); }
+  const dDate = document.getElementById('bwc-m-deact-date').value;
+  const dTime = document.getElementById('bwc-m-deact-time').value;
+  if (!dDate)     { return bwcFieldError('bwc-m-deact-date', 'Please enter the deactivation date'); }
+  if (!dTime)     { return bwcFieldError('bwc-m-deact-time', 'Please enter the deactivation time'); }
+  const durMins = bwcMinutesBetween(date, time, dDate, dTime);
+  if (durMins === null || durMins < 0) { return bwcFieldError('bwc-m-deact-time', 'Deactivation can’t be before the activation — please check the date and time'); }
+  if (!guardName) { return bwcFieldError('bwc-m-guard', 'Please enter the guard name'); }
+  if (!guardId)   { return bwcFieldError('bwc-m-guard-id', 'Please enter the guard ID number'); }
+  if (!location)  { return bwcFieldError('bwc-m-location', 'Please enter where the BWC was activated'); }
+  if (!reason)    { return bwcFieldError('bwc-m-reason', 'Please select the reason for activation (7.5)'); }
+  if (!bwcAnnounce) { return bwcFieldError('bwc-m-announce-yn', 'Please answer whether the activation was announced (7.7)'); }
+  if (bwcAnnounce === 'No' && !annReason) { return bwcFieldError('bwc-m-announce-reason', 'Please explain why the activation was not announced'); }
+
+  const [dY,dM] = date.split('-').map(Number);
+  const record = {
+    id: bwcUuid(),
+    formType: 'body_worn_camera',
+    activationDate: date, activationTime: time,
+    date, time,                                   // generic fields for sorting / Manager tools
+    month: MONTHS_NAMES[dM-1] + ' ' + dY,
+    guardName, guardId, location,
+    reasonCode: reason, reasonText: bwcReasonLabel(reason),
+    announcementMade: bwcAnnounce,
+    announcementReason: bwcAnnounce === 'No' ? annReason : '',
+    deactivationDate: dDate, deactivationTime: dTime, durationMins: durMins,
+    status: 'Awaiting Upload',
+    footageUploaded: '', footageFileName: '', footageLocation: '',
+    footageStoredDate: '', footageStoredTime: '',
+    linkedIncidentId: bwcPendingIncId || '',
+    site: getSiteName(), siteCode: getSiteCode(),
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  };
+
+  const data = loadBwc();
+  data.push(record);
+  saveBwcData(data);
+  if (!loadBwc().some(r => r.id === record.id)) {
+    throw new Error('The record could not be written to this device\'s storage — storage is full. Open Settings → Device Storage to free up space, then try again.');
+  }
+
+  // Link the incident back to this BWC record
+  if (bwcPendingIncId) {
+    const inc = loadData();
+    const i = inc.findIndex(r => r.id === bwcPendingIncId);
+    if (i >= 0) {
+      inc[i] = { ...inc[i], bwcActivated: 'Yes', linkedBwcId: record.id, updatedAt: new Date().toISOString() };
+      saveData(inc);
+      renderLog();
+    }
+    bwcPendingIncId = null;
+    document.getElementById('bwc-m-linked-note').style.display = 'none';
+  }
+
+  try {
+    bwcRememberGuardId(guardName, guardId);
+    const s = loadSettings(); s.lastOperator = guardName; saveSettingsLS(s);
+    if (typeof saveOfficerName === 'function') saveOfficerName(guardName);
+  } catch(e) { console.warn('BWC: could not remember guard details (storage full?)', e); }
+
+  bwcResetActivationForm();
+  bwcUpdateDuration();
+  renderBwcLog();
+  renderBwcAlert();
+  showToast('BWC activation logged ✓ — now awaiting uploading of footage', 'success');
+}
+
+function renderBwcLog() {
+  let data = loadBwc();
+  const search = (document.getElementById('bwc-m-search')?.value || '').toLowerCase();
+  const filter = document.getElementById('bwc-m-status-filter')?.value || '';
+  if (search) data = data.filter(r => JSON.stringify(r).toLowerCase().includes(search));
+  if (filter) data = data.filter(r => bwcStatus(r) === filter);
+  const rank = { awaiting: 0, complete: 1 };
+  data.sort((a, b) => {
+    const ra = rank[bwcStatus(a)], rb = rank[bwcStatus(b)];
+    if (ra !== rb) return ra - rb;
+    return ((b.activationDate||'')+(b.activationTime||'')).localeCompare((a.activationDate||'')+(a.activationTime||''));
+  });
+
+  const cnt = document.getElementById('bwc-m-log-count');
+  if (cnt) cnt.textContent = data.length + ' record' + (data.length !== 1 ? 's' : '');
+
+  const tbody = document.getElementById('bwc-m-log-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-style:italic;">No BWC records yet.</td></tr>';
+    return;
+  }
+  data.forEach(r => {
+    const st = bwcStatus(r);
+    const statusHtml = st === 'awaiting'
+      ? '<span style="background:rgba(245,158,11,0.18);color:#fcd34d;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;">⚠ Awaiting Upload</span>'
+      : '<span style="background:rgba(34,197,94,0.15);color:#86efac;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;">✅ Uploaded</span>';
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border)';
+    tr.style.cursor = 'pointer';
+    tr.title = 'Tap to view full details';
+    tr.onclick = () => showBwcDetail(r.id);
+    tr.innerHTML = '<td style="padding:7px 10px;color:var(--text2);font-size:11px;white-space:nowrap;">'+bwcFmtDate(r.activationDate)+' '+esc(r.activationTime||'')+'</td>'
+      + '<td style="padding:7px 10px;color:var(--text2);font-size:11px;white-space:nowrap;">'+bwcFmtDuration(bwcRecordDuration(r))+'</td>'
+      + '<td style="padding:7px 10px;color:var(--text2);font-size:11px;">'+esc(r.guardName||'—')+'</td>'
+      + '<td style="padding:7px 10px;color:var(--text2);font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;">'+esc(r.location||'—')+'</td>'
+      + '<td style="padding:7px 10px;color:var(--text2);font-size:11px;">'+esc(r.reasonCode||'—')+'</td>'
+      + '<td style="padding:7px 10px;">'+statusHtml+'</td>'
+      + '<td style="padding:7px 6px;white-space:nowrap;"></td>';
+    (function(rid, st) {
+      const td = tr.querySelector('td:last-child');
+      if (st === 'awaiting') {
+        const btn = document.createElement('button');
+        btn.textContent = '📤 Awaiting Uploading of Footage';
+        btn.style.cssText = 'background:none;border:1px solid rgba(245,158,11,0.6);color:#fcd34d;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--sans);margin-right:4px;';
+        btn.addEventListener('click', e => { e.stopPropagation(); openBwcClose(rid); });
+        td.appendChild(btn);
+      }
+      const del = document.createElement('button');
+      del.textContent = '✕';
+      del.style.cssText = 'background:none;border:1px solid rgba(239,68,68,0.3);color:var(--danger);padding:2px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:var(--sans);';
+      del.addEventListener('click', e => { e.stopPropagation(); deleteBwcRecord(rid); });
+      td.appendChild(del);
+    })(r.id, st);
+    tbody.appendChild(tr);
+  });
+}
+
+function openBwcClose(id) {
+  const r = loadBwc().find(x => x.id === id);
+  if (!r) return;
+  bwcCloseId = id;
+  const n = new Date();
+  document.getElementById('bwc-m-close-sub').textContent = r.guardName + ' (' + (r.guardId||'—') + ') · ' + (r.location||'—') + ' · Activated ' + bwcFmtDate(r.activationDate) + ' ' + (r.activationTime||'');
+  document.getElementById('bwc-m-file-name').value = '';
+  document.getElementById('bwc-m-file-location').value = '';
+  document.getElementById('bwc-m-stored-date').value = bwcTodayStr(n);
+  document.getElementById('bwc-m-stored-time').value = n.toTimeString().slice(0,5);
+  document.getElementById('bwc-m-close-form').style.display = 'block';
+  document.getElementById('bwc-m-close-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function cancelBwcClose() {
+  bwcCloseId = null;
+  const f = document.getElementById('bwc-m-close-form');
+  if (f) f.style.display = 'none';
+}
+function _confirmBwcClose() {
+  if (!bwcCloseId) return;
+  const rec = loadBwc().find(x => x.id === bwcCloseId);
+  if (!rec) { cancelBwcClose(); return; }
+  const fName = document.getElementById('bwc-m-file-name').value.trim();
+  const fLoc  = document.getElementById('bwc-m-file-location').value.trim();
+  const uDate = document.getElementById('bwc-m-stored-date').value;
+  const uTime = document.getElementById('bwc-m-stored-time').value;
+  if (!fName) { return bwcFieldError('bwc-m-file-name', 'Please enter the footage file name'); }
+  if (!fLoc)  { return bwcFieldError('bwc-m-file-location', 'Please enter where the footage is stored'); }
+  if (!uDate) { return bwcFieldError('bwc-m-stored-date', 'Please enter the date the footage was uploaded'); }
+  if (!uTime) { return bwcFieldError('bwc-m-stored-time', 'Please enter the time the footage was uploaded'); }
+  const afterD = rec.deactivationDate ? rec.deactivationDate + (rec.deactivationTime||'') : (rec.activationDate||'') + (rec.activationTime||'');
+  if ((uDate + uTime) < afterD) {
+    return bwcFieldError('bwc-m-stored-time', 'Upload can’t be before the camera was deactivated — please check the date and time');
+  }
+  const upd = {
+    status: 'Uploaded', footageUploaded: 'Yes',
+    footageFileName: fName, footageLocation: fLoc,
+    footageStoredDate: uDate, footageStoredTime: uTime,
+    updatedAt: new Date().toISOString(),
+  };
+  saveBwcData(loadBwc().map(r => r.id === bwcCloseId ? { ...r, ...upd } : r));
+  cancelBwcClose();
+  renderBwcLog();
+  renderBwcAlert();
+  showToast('Footage uploaded ✓ — BWC record complete', 'success');
+}
+
+function deleteBwcRecord(id) {
+  if (!confirm('Delete this BWC record? This cannot be undone.')) return;
+  saveBwcData(loadBwc().filter(r => r.id !== id));
+  // Unlink any incident pointing at it
+  const inc = loadData();
+  let changed = false;
+  inc.forEach(r => { if (r.linkedBwcId === id) { r.linkedBwcId = ''; r.updatedAt = new Date().toISOString(); changed = true; } });
+  if (changed) saveData(inc);
+  renderBwcLog();
+  renderBwcAlert();
+  showToast('Record deleted');
+}
+
+function showBwcDetail(id) {
+  const r = loadBwc().find(x => x.id === id);
+  if (!r) return;
+  const st = bwcStatus(r);
+  document.getElementById('reg-detail-hdr').style.background = 'linear-gradient(135deg,#450a0a,#7f1d1d)';
+  document.getElementById('reg-detail-icon').style.background = '#ef4444';
+  document.getElementById('reg-detail-icon').textContent = '🎥';
+  document.getElementById('reg-detail-title').textContent = 'BWC — ' + (r.guardName || 'Activation');
+  document.getElementById('reg-detail-sub').textContent = bwcFmtDate(r.activationDate) + ' ' + (r.activationTime||'') + ' · ' +
+    (st === 'awaiting' ? 'Awaiting Uploading of Footage' : 'Footage Uploaded');
+
+  let html = regDetailField('Status', st === 'awaiting' ? '⚠ Awaiting Uploading of Footage' : '✅ Footage Uploaded');
+  html += regDetailField('Activation (ACST/ACDT)', bwcFmtDate(r.activationDate) + ' ' + (r.activationTime||''));
+  if (r.deactivationDate) {
+    html += regDetailField('Deactivation (ACST/ACDT)', bwcFmtDate(r.deactivationDate) + ' ' + (r.deactivationTime||''));
+    html += regDetailField('BWC On For', bwcFmtDuration(bwcRecordDuration(r)));
+  }
+  html += regDetailField('Guard', (r.guardName||'—') + (r.guardId ? ' — ID ' + r.guardId : ''));
+  html += regDetailField('Location', r.location);
+  html += regDetailField('Reason (7.5)', r.reasonText || r.reasonCode);
+  html += regDetailField('Announcement Made (7.7)', r.announcementMade);
+  if (r.announcementMade === 'No') html += regDetailField('Why Not Announced', r.announcementReason);
+  if (r.footageUploaded === 'Yes') {
+    html += regDetailField('Footage File Name', r.footageFileName);
+    html += regDetailField('Storage Location', r.footageLocation);
+    html += regDetailField('Date / Time Uploaded', bwcFmtDate(r.footageStoredDate) + ' ' + (r.footageStoredTime||''));
+  }
+  if (r.linkedIncidentId) {
+    const inc = loadData().find(x => x.id === r.linkedIncidentId);
+    html += regDetailField('Linked Incident', inc ? (inc.type + ' · ' + bwcFmtDate(inc.date) + ' ' + (inc.time||'') + (inc.ref ? ' · ' + inc.ref : '')) : 'Linked incident not found on this device');
+  }
+  document.getElementById('reg-detail-body').innerHTML = html;
+  document.getElementById('reg-detail-modal').classList.add('open');
+}
+
+// Landing-screen alert — cameras still recording, and footage awaiting upload.
+function renderBwcAlert() {
+  const banner = document.getElementById('bwc-alert-banner');
+  const textEl = document.getElementById('bwc-alert-text');
+  if (!banner || !textEl) return;
+  const awaiting = loadBwc().filter(r => bwcStatus(r) === 'awaiting');
+  if (!awaiting.length) { banner.style.display = 'none'; return; }
+  textEl.textContent = awaiting.length + ' BWC Record' + (awaiting.length !== 1 ? 's' : '') +
+    ' Awaiting Uploading of Information — ' + awaiting.map(r => r.guardName).slice(0,3).join(', ') + (awaiting.length > 3 ? '…' : '');
+  banner.style.display = 'flex';
+}
+
+// ── Print / PDF — full BWC log, open items first.
+function printBwcLog() {
+  const rank = { awaiting: 0, complete: 1 };
+  const data = loadBwc().sort((a, b) => {
+    const ra = rank[bwcStatus(a)], rb = rank[bwcStatus(b)];
+    if (ra !== rb) return ra - rb;
+    return ((b.activationDate||'')+(b.activationTime||'')).localeCompare((a.activationDate||'')+(a.activationTime||''));
+  });
+  const genDate = new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const pendingCount = data.filter(r => bwcStatus(r) === 'awaiting').length;
+
+  const rowsHtml = data.length ? data.map(r => {
+    const st = bwcStatus(r);
+    const statusHtml = st === 'awaiting'
+      ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Awaiting Upload</span>'
+      : '<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">Uploaded</span>';
+    return `<tr>
+      <td>${bwcFmtDate(r.activationDate)}<br><span style="color:#5a6b85;font-size:11px;">${esc(r.activationTime||'')}</span></td>
+      <td>${r.deactivationDate ? bwcFmtDate(r.deactivationDate)+'<br><span style="color:#5a6b85;font-size:11px;">'+esc(r.deactivationTime||'')+'</span>' : '—'}</td>
+      <td>${bwcFmtDuration(bwcRecordDuration(r))}</td>
+      <td>${esc(r.guardName||'—')}<br><span style="color:#5a6b85;font-size:11px;">ID ${esc(r.guardId||'—')}</span></td>
+      <td>${esc(r.location||'—')}</td>
+      <td>${esc(r.reasonCode||'—')}</td>
+      <td>${esc(r.announcementMade||'—')}${r.announcementMade==='No' ? '<br><span style="color:#5a6b85;font-size:11px;">'+esc(r.announcementReason||'')+'</span>' : ''}</td>
+      <td>${r.footageUploaded==='Yes' ? esc(r.footageFileName)+'<br><span style="color:#5a6b85;font-size:11px;">'+esc(r.footageLocation)+'</span>' : '—'}</td>
+      <td>${r.footageUploaded==='Yes' ? bwcFmtDate(r.footageStoredDate)+'<br><span style="color:#5a6b85;font-size:11px;">'+esc(r.footageStoredTime||'')+'</span>' : '—'}</td>
+      <td>${statusHtml}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="10" style="text-align:center;padding:30px;color:#5a6b85;">No BWC records.</td></tr>';
+
+  const win = window.open('', '_blank', 'width=1150,height=900');
+  win.document.open();
+  win.document.write(`<!DOCTYPE html><html><head><title>AMS Security - Body Worn Camera Log</title>
+    <style>
+      *{box-sizing:border-box;}
+      body{font-family:Arial,sans-serif;background:#fff;color:#1a2332;margin:0;padding:0;font-size:13px;}
+      .ams-hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #7f1d1d;padding:10mm 10mm 14px;margin-bottom:16px;gap:16px;}
+      .ams-hdr-left{display:flex;align-items:center;gap:14px;}
+      .ams-hdr-left img{height:54px;width:auto;}
+      .ams-hdr h1{font-size:22px;color:#7f1d1d;margin:0;}
+      .ams-hdr p{font-size:14px;color:#33415a;margin:3px 0 0;}
+      .ams-hdr-right{text-align:right;font-size:12px;color:#33415a;white-space:nowrap;}
+      .body-pad{padding:0 10mm 10mm;}
+      .summary{background:#fee2e2;border:1px solid #ef4444;border-radius:8px;padding:10px 16px;margin-bottom:16px;font-weight:700;color:#7f1d1d;}
+      table{width:100%;border-collapse:collapse;font-size:11.5px;}
+      th{background:#7f1d1d;color:#fff;text-align:left;padding:8px 8px;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;}
+      td{padding:7px 8px;border-bottom:1px solid #dde3eb;vertical-align:top;}
+      tr:nth-child(even) td{background:#f7f9fc;}
+      .print-btn{background:#991b1b;color:#fff;border:none;padding:11px 28px;border-radius:6px;cursor:pointer;font-size:15px;font-weight:700;margin:20px 10mm;}
+      @media print{ .no-print{display:none;} @page{size:A4 landscape;margin:8mm;} th,.summary,td{-webkit-print-color-adjust:exact;print-color-adjust:exact;} }
+    </style></head><body>
+      <div class="ams-hdr">
+        <div class="ams-hdr-left">
+          <img src="data:image/png;base64,${AMS_LOGO_B64}" alt="AMS Security logo">
+          <div><h1>AMS SECURITY</h1><p>Body Worn Camera Log &mdash; ${esc(getSiteName())}</p></div>
+        </div>
+        <div class="ams-hdr-right">Generated ${genDate}<br>Times: ACST / ACDT</div>
+      </div>
+      <div class="body-pad">
+        <div class="summary">${pendingCount} awaiting uploading of footage &middot; ${data.length} total record${data.length!==1?'s':''}</div>
+        <table>
+          <thead><tr>
+            <th>Activation</th><th>Deactivation</th><th>On For</th><th>Guard / ID</th><th>Location</th><th>Reason (7.5)</th>
+            <th>Announced (7.7)</th><th>Footage File / Location</th><th>Uploaded</th><th>Status</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <button class="print-btn no-print" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </body></html>`);
+  win.document.close();
+}
 
 </script>
 
